@@ -2,11 +2,12 @@
     'grid',
     'renderer' => 'tabulator',
     'transport' => null,
+    'endpoint' => null,
     'livewireMethod' => 'loadPetak',
 ])
 
 @php
-    $configuration = $grid->configuration();
+    $configuration = $grid->configuration($endpoint);
     $configuration['renderer'] = $renderer;
     $configuration['transport'] = $transport;
     $configuration['livewire_method'] = $livewireMethod;

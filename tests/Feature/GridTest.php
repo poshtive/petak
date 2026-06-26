@@ -583,6 +583,65 @@ class GridTest extends TestCase
         $this->assertSame(2, $result->meta['pagination']['per_page']);
     }
 
+    public function test_configuration_exposes_endpoint_preload_and_responsive_settings(): void
+    {
+        $configuration = Petak::for(DB::table('petak_items'))
+            ->name('preloaded-items')
+            ->columns([
+                Column::make('id')->integer()->sortable(),
+                Column::make('name')->responsivePriority(2),
+            ])
+            ->defaultSort([['field' => 'id', 'direction' => 'desc']])
+            ->preload()
+            ->responsiveLayout('collapse')
+            ->configuration('/petak/items/data');
+
+        $this->assertSame('/petak/items/data', $configuration['endpoint']);
+        $this->assertTrue($configuration['preload']);
+        $this->assertSame('collapse', $configuration['responsive']['layout']);
+        $this->assertFalse($configuration['responsive']['collapse_start_open']);
+        $this->assertSame(2, $configuration['columns'][1]['responsive_priority']);
+        $this->assertSame(['Charlie', 'Bravo', 'Alpha'], array_column($configuration['initialResult']['data'], 'name'));
+        $this->assertSame(3, $configuration['initialResult']['meta']['pagination']['total']);
+    }
+
+    public function test_grid_component_passes_explicit_endpoint_to_configuration(): void
+    {
+        $this->get('/petak/items')
+            ->assertOk()
+            ->assertSee('"endpoint":"http:\/\/localhost\/petak\/items"', false);
+
+        Route::get('/petak/separate-endpoint', function () {
+            return view('petak-test::grid', [
+                'grid' => Petak::for(DB::table('petak_items'))
+                    ->name('separate-endpoint')
+                    ->columns(['id']),
+                'endpoint' => '/petak/items/data',
+            ]);
+        });
+
+        $this->get('/petak/separate-endpoint')
+            ->assertOk()
+            ->assertSee('"endpoint":"\/petak\/items\/data"', false);
+    }
+
+    public function test_preload_and_responsive_defaults_can_come_from_config(): void
+    {
+        config()->set('petak.preload', true);
+        config()->set('petak.responsive.layout', 'hide');
+        config()->set('petak.responsive.collapse_start_open', true);
+
+        $configuration = Petak::for(DB::table('petak_items'))
+            ->name('configured-preload')
+            ->columns(['id'])
+            ->configuration('/petak/items/data');
+
+        $this->assertTrue($configuration['preload']);
+        $this->assertSame('hide', $configuration['responsive']['layout']);
+        $this->assertTrue($configuration['responsive']['collapse_start_open']);
+        $this->assertArrayHasKey('initialResult', $configuration);
+    }
+
     public function test_bulk_edit_and_csv_export_actions_use_registered_server_callbacks(): void
     {
         $this->postJson('/petak/actions', [

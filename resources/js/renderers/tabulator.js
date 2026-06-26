@@ -108,6 +108,16 @@ function fitContentColumns(table, config) {
     }
 }
 
+function tabulatorResult(result) {
+    const pagination = result?.meta?.pagination ?? {};
+
+    return {
+        data: result?.data ?? [],
+        last_page: pagination.last_page ?? 1,
+        last_row: pagination.total ?? result?.data?.length ?? 0,
+    };
+}
+
 export function createPetakGrid(element, options = {}) {
     if (instances.has(element)) {
         return instances.get(element);
@@ -215,6 +225,11 @@ export function createPetakGrid(element, options = {}) {
     };
     let lastRequest = canonicalRequest(config, {}, search?.value ?? '');
 
+    if (config.responsive?.layout) {
+        tableOptions.responsiveLayout = config.responsive.layout;
+        tableOptions.responsiveLayoutCollapseStartOpen = Boolean(config.responsive.collapse_start_open);
+    }
+
     if (persistedState?.pageSize) {
         tableOptions.paginationSize = persistedState.pageSize;
     }
@@ -227,8 +242,10 @@ export function createPetakGrid(element, options = {}) {
         tableOptions.initialFilter = persistedState.filters;
     }
 
-    if (!remote) {
-        tableOptions.data = config.initialResult?.data ?? [];
+    if (config.initialResult) {
+        tableOptions.data = remote
+            ? tabulatorResult(config.initialResult)
+            : config.initialResult.data ?? [];
     }
 
     const table = new Tabulator(target, tableOptions);

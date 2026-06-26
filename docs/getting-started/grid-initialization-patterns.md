@@ -125,6 +125,12 @@ public function data()
 }
 ```
 
+Pass the data endpoint to the grid component in the page view:
+
+```blade
+<x-petak::grid :grid="$grid" :endpoint="route('users.data')" />
+```
+
 ## Reusable Named Grid
 
 Use a named factory when multiple controllers need the same simple definition:

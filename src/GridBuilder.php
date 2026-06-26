@@ -11,6 +11,7 @@ use LogicException;
 use Poshtive\Petak\Actions\ActionResponder;
 use Poshtive\Petak\Actions\BulkAction;
 use Poshtive\Petak\Enums\GridMode;
+use Poshtive\Petak\Enums\SortDirection;
 use Poshtive\Petak\Exports\CsvExport;
 use Poshtive\Petak\Exports\XlsxExport;
 use Poshtive\Petak\State\GridState;
@@ -61,6 +62,12 @@ final class GridBuilder
 
     private ?string $className = null;
 
+    private bool $preload;
+
+    private ?string $responsiveLayout;
+
+    private bool $responsiveCollapseStartOpen;
+
     private ?GridState $state = null;
 
     /** @var array<string, BulkAction> */
@@ -82,6 +89,9 @@ final class GridBuilder
         $this->striped = (bool) config('petak.appearance.striped', false);
         $this->bordered = (bool) config('petak.appearance.bordered', true);
         $this->theme = config('petak.appearance.theme');
+        $this->preload((bool) config('petak.preload', false));
+        $this->responsiveLayout(config('petak.responsive.layout'));
+        $this->responsiveCollapseStartOpen = (bool) config('petak.responsive.collapse_start_open', false);
         $this->verticalAlign((string) config('petak.appearance.vertical_align', 'middle'));
     }
 
@@ -272,6 +282,31 @@ final class GridBuilder
         return $this;
     }
 
+    public function preload(bool $enabled = true): self
+    {
+        $this->preload = $enabled;
+        $this->forgetDefinition();
+
+        return $this;
+    }
+
+    public function responsiveLayout(?string $layout, ?bool $collapseStartOpen = null): self
+    {
+        if ($layout !== null && ! in_array($layout, ['hide', 'collapse'], true)) {
+            throw new \InvalidArgumentException('Grid responsive layout must be hide, collapse, or null.');
+        }
+
+        $this->responsiveLayout = $layout;
+
+        if ($collapseStartOpen !== null) {
+            $this->responsiveCollapseStartOpen = $collapseStartOpen;
+        }
+
+        $this->forgetDefinition();
+
+        return $this;
+    }
+
     /** @param  list<array{field: string, direction: string}>  $sort */
     public function defaultSort(array $sort): self
     {
@@ -315,6 +350,11 @@ final class GridBuilder
             ],
             className: $this->className,
             rowKey: $this->rowKey,
+            preload: $this->preload,
+            responsive: [
+                'layout' => $this->responsiveLayout,
+                'collapse_start_open' => $this->responsiveCollapseStartOpen,
+            ],
         );
     }
 
@@ -398,18 +438,26 @@ final class GridBuilder
             )),
         ];
 
-        if ($definition->mode === GridMode::Local) {
+        if ($definition->mode === GridMode::Local || $definition->preload) {
             $maxLocalRows = (int) config('petak.max_local_rows', 1000);
             $request = new GridRequest(
                 page: 1,
-                pageSize: $maxLocalRows > 0 ? $maxLocalRows + 1 : PHP_INT_MAX,
-                sort: [],
+                pageSize: $definition->mode === GridMode::Local
+                    ? ($maxLocalRows > 0 ? $maxLocalRows + 1 : PHP_INT_MAX)
+                    : $definition->defaultPageSize,
+                sort: array_map(
+                    static fn (array $item) => [
+                        'field' => $item['field'],
+                        'direction' => SortDirection::from($item['direction']),
+                    ],
+                    $definition->defaultSort,
+                ),
                 filters: [],
             );
             $initialResult = $this->engine->execute($definition, $request);
             $total = (int) data_get($initialResult->meta, 'pagination.total', count($initialResult->data));
 
-            if ($maxLocalRows > 0 && $total > $maxLocalRows) {
+            if ($definition->mode === GridMode::Local && $maxLocalRows > 0 && $total > $maxLocalRows) {
                 throw new \LengthException(
                     "Petak local mode is limited to {$maxLocalRows} rows. Use remote mode for larger datasets.",
                 );

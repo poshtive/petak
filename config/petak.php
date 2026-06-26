@@ -10,6 +10,11 @@ return [
     'max_filter_depth' => 3,
     'max_search_length' => 100,
     'default_renderer' => 'tabulator',
+    'preload' => false,
+    'responsive' => [
+        'layout' => null,
+        'collapse_start_open' => false,
+    ],
     'appearance' => [
         'density' => 'comfortable',
         'striped' => false,

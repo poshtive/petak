@@ -19,6 +19,11 @@ return [
     'max_filter_depth' => 3,
     'max_search_length' => 100,
     'default_renderer' => 'tabulator',
+    'preload' => false,
+    'responsive' => [
+        'layout' => null,
+        'collapse_start_open' => false,
+    ],
     'appearance' => [
         'density' => 'comfortable',
         'striped' => false,
@@ -38,6 +43,18 @@ a specific grid into dark mode.
 
 `max_local_rows` caps initial local-mode payload size. Use remote grids for
 database-backed application data.
+
+## Preload
+
+`preload` controls whether remote Tabulator grids include the first result page
+in their initial configuration. It defaults to `false`; enable it globally only
+when the extra server-side query during page rendering is acceptable.
+
+## Responsive Layout
+
+`responsive.layout` accepts `null`, `hide`, or `collapse`. Use `collapse` to
+move columns with larger `responsivePriority()` values into Tabulator's
+responsive row area when the table narrows.
 
 ## Search Length
 

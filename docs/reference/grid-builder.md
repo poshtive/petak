@@ -50,6 +50,16 @@ pagination(
 ): self
 ```
 
+## Initial Data
+
+```php
+preload(bool $enabled = true): self
+```
+
+`preload()` includes the first remote page in the grid configuration so the
+Tabulator renderer can paint initial rows without waiting for its first data
+request. Local grids always include initial rows.
+
 ## State
 
 ```php
@@ -72,6 +82,7 @@ bordered(bool $enabled = true): self
 theme(?string $theme): self
 verticalAlign(string $align): self
 className(?string $className): self
+responsiveLayout(?string $layout, ?bool $collapseStartOpen = null): self
 ```
 
 Density values: `compact`, `comfortable`, `spacious`.
@@ -80,6 +91,10 @@ Density values: `compact`, `comfortable`, `spacious`.
 for that grid through `data-petak-theme="dark"`.
 
 Vertical alignment values: `top`, `middle`, `bottom`.
+
+Responsive layout values: `null`, `hide`, `collapse`. The `collapse` layout
+uses column `responsivePriority()` values to move lower-priority columns into
+Tabulator's responsive row area.
 
 ## Rendering and Execution
 

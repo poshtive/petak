@@ -141,6 +141,44 @@ describe('Petak transports and lifecycle', () => {
         expect(tables).toHaveLength(1);
     });
 
+    it('passes remote preloaded results and responsive layout to Tabulator', () => {
+        document.body.innerHTML = `
+            <div data-petak-grid data-petak-config="preload-config">
+                <div data-petak-renderer></div>
+                <div data-petak-status></div>
+            </div>
+            <script id="preload-config" type="application/json">
+                {
+                    "version":"1",
+                    "name":"preloaded",
+                    "mode":"remote",
+                    "endpoint":"/users/data",
+                    "columns":[{"key":"email","label":"Email","responsive_priority":2}],
+                    "initialResult":{
+                        "data":[{"email":"ada@example.com"}],
+                        "meta":{"pagination":{"last_page":3,"total":51}}
+                    },
+                    "responsive":{"layout":"collapse","collapse_start_open":false},
+                    "pagination":{"default_page_size":25,"page_sizes":[25]}
+                }
+            </script>
+        `;
+
+        createPetakGrid(document.querySelector('[data-petak-grid]'), {
+            transport: { load: vi.fn() },
+        });
+
+        expect(tables[0].options.data).toEqual({
+            data: [{ email: 'ada@example.com' }],
+            last_page: 3,
+            last_row: 51,
+        });
+        expect(tables[0].options.ajaxURL).toBe('/users/data');
+        expect(tables[0].options.responsiveLayout).toBe('collapse');
+        expect(tables[0].options.responsiveLayoutCollapseStartOpen).toBe(false);
+        expect(tables[0].options.columns[0].responsive).toBe(2);
+    });
+
     it('versions and restores saved views from local storage', () => {
         const config = {
             state: {
