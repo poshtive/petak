@@ -1,0 +1,45 @@
+@layer petak.vendor, petak.structure, petak.theme;
+
+@layer petak.theme {
+    .petak {
+        --petak-font-family: var(--bs-body-font-family, inherit);
+        --petak-font-size: var(--bs-body-font-size, .875rem);
+        --petak-color: var(--bs-body-color, #212529);
+        --petak-muted-color: var(--bs-secondary-color, #6c757d);
+        --petak-surface: var(--bs-body-bg, #fff);
+        --petak-surface-raised: var(--bs-body-bg, #fff);
+        --petak-surface-hover: var(--bs-tertiary-bg, #f8f9fa);
+        --petak-surface-selected: var(--bs-secondary-bg, #e9ecef);
+        --petak-header-surface: var(--bs-secondary-bg, #e9ecef);
+        --petak-header-color: var(--bs-emphasis-color, #212529);
+        --petak-filter-surface: var(--bs-tertiary-bg, #f8f9fa);
+        --petak-footer-surface: var(--bs-tertiary-bg, #f8f9fa);
+        --petak-border-color: var(--bs-border-color, #dee2e6);
+        --petak-row-divider: color-mix(
+            in srgb,
+            var(--bs-border-color, #dee2e6) 68%,
+            transparent
+        );
+        --petak-accent: var(--bs-secondary-color, #6c757d);
+        --petak-accent-contrast: var(--bs-body-bg, #fff);
+        --petak-success: var(--bs-success, #198754);
+        --petak-warning: var(--bs-warning, #ffc107);
+        --petak-danger: var(--bs-danger, #dc3545);
+        --petak-info: var(--bs-info, #0dcaf0);
+        --petak-disabled: var(--bs-secondary-color, #6c757d);
+        --petak-radius: var(--bs-border-radius, .375rem);
+        --petak-focus-color: rgb(var(--bs-secondary-rgb, 108 117 125) / 65%);
+    }
+
+    [data-bs-theme="dark"] .petak {
+        color-scheme: dark;
+    }
+
+    .petak :where(button, input, select) {
+        border-radius: var(--bs-border-radius-sm, .25rem);
+    }
+
+    .petak .tabulator-row:hover {
+        background-color: var(--petak-surface-hover);
+    }
+}

@@ -1,0 +1,21 @@
+<?php
+
+namespace Poshtive\Petak\Facades;
+
+use Illuminate\Support\Facades\Facade;
+use Poshtive\Petak\PetakManager;
+
+/**
+ * @method static \Poshtive\Petak\GridBuilder for(mixed $source)
+ * @method static void define(string $name, \Closure $factory)
+ * @method static \Poshtive\Petak\GridBuilder get(string $name)
+ *
+ * @see PetakManager
+ */
+final class Petak extends Facade
+{
+    protected static function getFacadeAccessor(): string
+    {
+        return 'petak';
+    }
+}

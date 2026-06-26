@@ -1,0 +1,175 @@
+<?php
+
+namespace Poshtive\Petak\Sources;
+
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Poshtive\Petak\GridDefinition;
+use Poshtive\Petak\GridRequest;
+use Poshtive\Petak\GridResult;
+use Poshtive\Petak\Sources\Concerns\BuildsResults;
+
+abstract class DatabaseSource implements DataSource
+{
+    use BuildsResults;
+
+    public function __construct(protected EloquentBuilder|QueryBuilder $query) {}
+
+    public function execute(GridDefinition $definition, GridRequest $request): GridResult
+    {
+        $query = $this->queryFor($definition, $request);
+
+        $paginator = $query->paginate(perPage: $request->pageSize, page: $request->page);
+
+        $rows = array_map(
+            fn (mixed $row) => $this->projectRow($row, $definition),
+            $paginator->items(),
+        );
+
+        return new GridResult(
+            data: $rows,
+            meta: $this->paginationMeta(
+                $paginator->currentPage(),
+                $paginator->perPage(),
+                $paginator->total(),
+                count($rows),
+            ),
+        );
+    }
+
+    public function exportRows(GridDefinition $definition, GridRequest $request): iterable
+    {
+        foreach ($this->queryFor($definition, $request)->cursor() as $row) {
+            yield $row;
+        }
+    }
+
+    public function isLocal(): bool
+    {
+        return false;
+    }
+
+    private function queryFor(
+        GridDefinition $definition,
+        GridRequest $request,
+    ): EloquentBuilder|QueryBuilder {
+        $query = clone $this->query;
+
+        $this->applyFilterNodes($query, $definition, $request->filters);
+
+        if ($request->search !== null && $request->search !== '') {
+            $query->where(function (EloquentBuilder|QueryBuilder $search) use ($definition, $request): void {
+                foreach ($definition->columns as $column) {
+                    if ($column->isSearchable()) {
+                        $this->applyLike(
+                            $search,
+                            $column->filterField(),
+                            'like',
+                            '%'.$this->escapeLike($request->search).'%',
+                            'or',
+                        );
+                    }
+                }
+            });
+        }
+
+        foreach ($request->sort as $item) {
+            $column = $definition->column($item['field']);
+            $resolver = $column->sortResolver();
+
+            if ($resolver !== null) {
+                $resolver($query, $item['direction']);
+            } else {
+                $query->orderBy($column->sortField(), $item['direction']->value);
+            }
+        }
+
+        return $query;
+    }
+
+    private function applyFilter(
+        EloquentBuilder|QueryBuilder $query,
+        string $field,
+        string $operator,
+        mixed $value,
+    ): void {
+        match ($operator) {
+            'contains' => $this->applyLike($query, $field, 'like', '%'.$this->escapeLike($value).'%'),
+            'not_contains' => $this->applyLike($query, $field, 'not like', '%'.$this->escapeLike($value).'%'),
+            'starts_with' => $this->applyLike($query, $field, 'like', $this->escapeLike($value).'%'),
+            'ends_with' => $this->applyLike($query, $field, 'like', '%'.$this->escapeLike($value)),
+            'equals' => $query->where($field, '=', $value),
+            'not_equals' => $query->where($field, '!=', $value),
+            'greater_than' => $query->where($field, '>', $value),
+            'greater_or_equal' => $query->where($field, '>=', $value),
+            'less_than' => $query->where($field, '<', $value),
+            'less_or_equal' => $query->where($field, '<=', $value),
+            'between' => $query->whereBetween($field, $value),
+            'not_between' => $query->whereNotBetween($field, $value),
+            'is_empty' => $query->where(fn ($nested) => $nested->whereNull($field)->orWhere($field, '')),
+            'is_not_empty' => $query->whereNotNull($field)->where($field, '!=', ''),
+        };
+    }
+
+    private function applyFilterNodes(
+        EloquentBuilder|QueryBuilder $query,
+        GridDefinition $definition,
+        array $nodes,
+        string $boolean = 'and',
+    ): void {
+        foreach ($nodes as $item) {
+            $method = $boolean === 'or' ? 'orWhere' : 'where';
+
+            if (isset($item['filters'])) {
+                $query->{$method}(function ($nested) use ($definition, $item): void {
+                    $this->applyFilterNodes(
+                        $nested,
+                        $definition,
+                        $item['filters'],
+                        $item['boolean'],
+                    );
+                });
+
+                continue;
+            }
+
+            $column = $definition->column($item['field']);
+            $resolver = $column->filterResolver();
+
+            $query->{$method}(function ($nested) use ($resolver, $column, $item): void {
+                if ($resolver !== null) {
+                    $resolver($nested, $item['operator'], $item['value']);
+                } else {
+                    $this->applyFilter(
+                        $nested,
+                        $column->filterField(),
+                        $item['operator'],
+                        $item['value'],
+                    );
+                }
+            });
+        }
+    }
+
+    private function escapeLike(mixed $value): string
+    {
+        return addcslashes((string) $value, '%_\\');
+    }
+
+    private function applyLike(
+        EloquentBuilder|QueryBuilder $query,
+        string $field,
+        string $operator,
+        string $value,
+        string $boolean = 'and',
+    ): void {
+        $builder = $query instanceof EloquentBuilder ? $query->getQuery() : $query;
+        $wrapped = $builder->getGrammar()->wrap($field);
+
+        $query->whereRaw(
+            "{$wrapped} {$operator} ? escape '\\'",
+            [$value],
+            $boolean,
+        );
+    }
+}

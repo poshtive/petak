@@ -1,0 +1,60 @@
+{
+    "name": "poshtive/petak",
+    "description": "Headless, composable data grids for Laravel.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "grid",
+        "datagrid",
+        "tabulator",
+        "petak"
+    ],
+    "homepage": "https://github.com/poshtive/petak",
+    "support": {
+        "issues": "https://github.com/poshtive/petak/issues",
+        "source": "https://github.com/poshtive/petak"
+    },
+    "require": {
+        "php": "^8.3",
+        "illuminate/contracts": "^13.0",
+        "illuminate/database": "^13.0",
+        "illuminate/http": "^13.0",
+        "illuminate/pagination": "^13.0",
+        "illuminate/support": "^13.0",
+        "illuminate/view": "^13.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.29.3",
+        "orchestra/testbench": "^11.1",
+        "phpunit/phpunit": "^11.5"
+    },
+    "suggest": {
+        "openspout/openspout": "Required to enable XLSX export support."
+    },
+    "autoload": {
+        "psr-4": {
+            "Poshtive\\Petak\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Poshtive\\Petak\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test:unit": "phpunit --testsuite Unit",
+        "test:feature": "phpunit --testsuite Feature"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Poshtive\\Petak\\PetakServiceProvider"
+            ],
+            "aliases": {
+                "Petak": "Poshtive\\Petak\\Facades\\Petak"
+            }
+        }
+    }
+}

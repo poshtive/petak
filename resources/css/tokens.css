@@ -1,0 +1,110 @@
+@layer petak.vendor, petak.structure, petak.theme;
+
+@layer petak.theme {
+    .petak {
+        --petak-font-family: inherit;
+        --petak-font-size: .875rem;
+        --petak-font-size-sm: .8125rem;
+        --petak-font-size-xs: .75rem;
+        --petak-font-weight: 400;
+        --petak-color: inherit;
+        --petak-muted-color: #6b7280;
+        --petak-surface: #fff;
+        --petak-surface-raised: #fff;
+        --petak-surface-hover: #f7f7f8;
+        --petak-surface-selected: #eeeeef;
+        --petak-header-surface: #e7e7e9;
+        --petak-header-color: #27272a;
+        --petak-filter-surface: #f6f6f7;
+        --petak-footer-surface: #f6f6f7;
+        --petak-border-color: #c9c9cd;
+        --petak-row-divider: #e4e4e7;
+        --petak-accent: #3f3f46;
+        --petak-accent-contrast: #fff;
+        --petak-neutral: #52525b;
+        --petak-success: #16794a;
+        --petak-warning: #9a6700;
+        --petak-danger: #b42318;
+        --petak-info: #2563a6;
+        --petak-disabled: #a1a1aa;
+        --petak-error-surface: #fff3f3;
+        --petak-row-height: 2.5rem;
+        --petak-control-height: 2.25rem;
+        --petak-footer-height: 2.75rem;
+        --petak-cell-padding-inline: .75rem;
+        --petak-cell-padding-block: .5rem;
+        --petak-gap: .75rem;
+        --petak-radius: .375rem;
+        --petak-border-width: 1px;
+        --petak-focus-color: rgb(63 63 70 / 55%);
+        --petak-transition-duration: .15s;
+    }
+
+    .petak--compact {
+        --petak-row-height: 2rem;
+        --petak-control-height: 1.875rem;
+        --petak-footer-height: 2.375rem;
+        --petak-cell-padding-inline: .5rem;
+        --petak-cell-padding-block: .3rem;
+        --petak-gap: .5rem;
+    }
+
+    .petak--spacious {
+        --petak-row-height: 3rem;
+        --petak-control-height: 2.625rem;
+        --petak-footer-height: 3rem;
+        --petak-cell-padding-inline: 1rem;
+        --petak-cell-padding-block: .7rem;
+        --petak-gap: 1rem;
+    }
+
+    .petak[data-petak-theme="dark"] {
+        color-scheme: dark;
+        --petak-color: #d4d4d4;
+        --petak-muted-color: #9d9d9d;
+        --petak-surface: #252526;
+        --petak-surface-raised: #2d2d30;
+        --petak-surface-hover: #2a2d2e;
+        --petak-surface-selected: #264f78;
+        --petak-header-surface: #343437;
+        --petak-header-color: #d4d4d4;
+        --petak-filter-surface: #252526;
+        --petak-footer-surface: #252526;
+        --petak-border-color: #3c3c3c;
+        --petak-row-divider: #343434;
+        --petak-accent: #d4d4d8;
+        --petak-accent-contrast: #18181b;
+        --petak-disabled: #6a6a6a;
+        --petak-error-surface: #4c1d1d;
+        --petak-focus-color: rgb(117 190 255 / 75%);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-bs-theme]):not([data-theme]) .petak:not([data-petak-theme]) {
+            color-scheme: dark;
+            --petak-color: #d4d4d4;
+            --petak-muted-color: #9d9d9d;
+            --petak-surface: #252526;
+            --petak-surface-raised: #2d2d30;
+            --petak-surface-hover: #2a2d2e;
+            --petak-surface-selected: #264f78;
+            --petak-header-surface: #343437;
+            --petak-header-color: #d4d4d4;
+            --petak-filter-surface: #252526;
+            --petak-footer-surface: #252526;
+            --petak-border-color: #3c3c3c;
+            --petak-row-divider: #343434;
+            --petak-accent: #d4d4d8;
+            --petak-accent-contrast: #18181b;
+            --petak-disabled: #6a6a6a;
+            --petak-error-surface: #4c1d1d;
+            --petak-focus-color: rgb(117 190 255 / 75%);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .petak {
+            --petak-transition-duration: 0s;
+        }
+    }
+}

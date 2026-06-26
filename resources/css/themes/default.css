@@ -1,0 +1,95 @@
+@layer petak.vendor, petak.structure, petak.theme;
+
+@layer petak.theme {
+    .petak {
+        color: var(--petak-color);
+        font-family: var(--petak-font-family);
+        font-size: var(--petak-font-size);
+        font-weight: var(--petak-font-weight);
+    }
+
+    .petak :where(input, select, button, a) {
+        font: inherit;
+    }
+
+    .petak :where(input, select, button) {
+        min-height: var(--petak-control-height);
+        color: var(--petak-color);
+        background: var(--petak-surface-raised);
+        border: var(--petak-border-width) solid var(--petak-border-color);
+        border-radius: var(--petak-radius);
+        transition:
+            color var(--petak-transition-duration),
+            background-color var(--petak-transition-duration),
+            border-color var(--petak-transition-duration);
+    }
+
+    .petak :where(input, select) {
+        padding-inline: .625rem;
+    }
+
+    .petak :where(button) {
+        padding-inline: .75rem;
+        cursor: pointer;
+    }
+
+    .petak :where(button, input, select, a):focus-visible {
+        outline: 2px solid var(--petak-focus-color);
+        outline-offset: 2px;
+    }
+
+    .petak :where(button, input, select):disabled,
+    .petak [aria-disabled="true"] {
+        color: var(--petak-disabled);
+        cursor: not-allowed;
+        opacity: .72;
+    }
+
+    .petak__columns-menu {
+        color: var(--petak-color);
+        background: var(--petak-surface-raised);
+        border: var(--petak-border-width) solid var(--petak-border-color);
+        border-radius: var(--petak-radius);
+        box-shadow: 0 .5rem 1.25rem color-mix(in srgb, var(--petak-color) 12%, transparent);
+    }
+
+    .petak__columns-heading {
+        color: var(--petak-muted-color);
+        background: var(--petak-footer-surface);
+        border-block-end: var(--petak-border-width) solid var(--petak-border-color);
+    }
+
+    .petak__columns-list label:hover {
+        background: var(--petak-surface-hover);
+    }
+
+    .petak__columns-list input {
+        min-height: 1rem;
+        accent-color: var(--petak-accent);
+    }
+
+    .petak__status {
+        min-height: 1.5rem;
+        padding-block: .25rem;
+        color: var(--petak-muted-color);
+    }
+
+    .petak__status:not(:empty) {
+        padding: .5rem .75rem;
+        background: var(--petak-error-surface);
+        border-inline-start: 3px solid var(--petak-danger);
+    }
+
+    .petak__action,
+    .petak [data-variant] {
+        --petak-variant-color: var(--petak-neutral);
+        color: var(--petak-variant-color);
+        border-color: color-mix(in srgb, var(--petak-variant-color) 45%, var(--petak-border-color));
+    }
+
+    .petak [data-variant="primary"] { --petak-variant-color: var(--petak-accent); }
+    .petak [data-variant="success"] { --petak-variant-color: var(--petak-success); }
+    .petak [data-variant="warning"] { --petak-variant-color: var(--petak-warning); }
+    .petak [data-variant="danger"] { --petak-variant-color: var(--petak-danger); }
+    .petak [data-variant="info"] { --petak-variant-color: var(--petak-info); }
+}

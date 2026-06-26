@@ -1,0 +1,198 @@
+@layer petak.vendor, petak.structure, petak.theme;
+
+@import 'tabulator-tables/dist/css/tabulator.min.css' layer(petak.vendor);
+@import './renderers/tabulator.css';
+@import './renderers/blade.css';
+
+@layer petak.structure {
+    .petak {
+        position: relative;
+        max-width: 100%;
+        min-width: 0;
+        isolation: isolate;
+    }
+
+    .petak *,
+    .petak *::before,
+    .petak *::after {
+        box-sizing: border-box;
+    }
+
+    .petak__renderer {
+        max-width: 100%;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+    }
+
+    .petak--tabulator .petak__renderer {
+        overflow: visible;
+    }
+
+    .petak__toolbar,
+    .petak__pagination {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--petak-gap);
+    }
+
+    .petak__toolbar {
+        justify-content: space-between;
+        margin-block-end: .65rem;
+    }
+
+    .petak__toolbar-primary,
+    .petak__toolbar-actions {
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--petak-gap);
+    }
+
+    .petak__toolbar-primary {
+        flex: 1 1 20rem;
+        justify-content: flex-start;
+        min-width: 0;
+    }
+
+    .petak__toolbar-actions {
+        flex: 0 1 auto;
+        justify-content: flex-end;
+        margin-inline-start: auto;
+    }
+
+    .petak__toolbar :is(input, select, button),
+    .petak__columns,
+    .petak__columns-toggle {
+        block-size: var(--petak-control-height);
+        min-block-size: var(--petak-control-height);
+    }
+
+    .petak__toolbar :is(input, select, button),
+    .petak__columns-toggle {
+        padding-block: 0;
+    }
+
+    .petak__pagination {
+        justify-content: space-between;
+        margin-block-start: var(--petak-gap);
+    }
+
+    .petak__search {
+        width: min(100%, 20rem);
+    }
+
+    .petak__columns {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .petak__columns-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .petak__columns-caret {
+        width: 0;
+        height: 0;
+        border-inline: .28rem solid transparent;
+        border-block-start: .34rem solid currentColor;
+        transform: translateY(.05rem);
+        transition: transform var(--petak-transition-duration);
+    }
+
+    .petak__columns-toggle[aria-expanded="true"] .petak__columns-caret {
+        transform: translateY(-.05rem) rotate(180deg);
+    }
+
+    .petak__columns-menu {
+        position: absolute;
+        inset-block-start: calc(100% + .35rem);
+        inset-inline-end: 0;
+        z-index: 30;
+        min-width: 13rem;
+        overflow: hidden;
+    }
+
+    .petak__columns-list {
+        display: grid;
+        padding-block: .25rem;
+    }
+
+    .petak__columns-list label {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        min-height: 2.125rem;
+        padding-inline: .75rem;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+    }
+
+    .petak__columns-list input {
+        flex: 0 0 auto;
+        width: 1rem;
+        min-height: 1rem;
+        height: 1rem;
+        margin: 0;
+    }
+
+    .petak__columns-heading {
+        padding: .55rem .75rem .4rem;
+        font-size: var(--petak-font-size-xs);
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+
+    .petak__search-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .petak__status:empty {
+        display: none;
+    }
+
+    .petak [hidden],
+    .petak-is-hidden {
+        display: none;
+    }
+
+    .petak [data-align="center"] {
+        text-align: center;
+    }
+
+    .petak [data-align="end"] {
+        text-align: end;
+    }
+
+    @media (max-width: 575.98px) {
+        .petak__toolbar,
+        .petak__pagination {
+            align-items: stretch;
+            justify-content: flex-start;
+        }
+
+        .petak__search {
+            width: 100%;
+        }
+
+        .petak__columns-menu {
+            inset-inline: 0 auto;
+            max-width: calc(100vw - 2rem);
+        }
+    }
+}

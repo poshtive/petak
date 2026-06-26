@@ -1,0 +1,160 @@
+@layer petak.vendor, petak.structure, petak.theme;
+
+@layer petak.structure {
+    .petak__table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: auto;
+    }
+
+    .petak__table th,
+    .petak__table td {
+        min-height: var(--petak-row-height);
+        padding: var(--petak-cell-padding-block) var(--petak-cell-padding-inline);
+        text-align: start;
+        vertical-align: middle;
+    }
+
+    .petak__table :is(th, td)[data-vertical-align="top"] {
+        vertical-align: top;
+    }
+
+    .petak__table :is(th, td)[data-vertical-align="middle"] {
+        vertical-align: middle;
+    }
+
+    .petak__table :is(th, td)[data-vertical-align="bottom"] {
+        vertical-align: bottom;
+    }
+
+    .petak__table :is(th, td)[data-fit-content] {
+        width: 1%;
+        white-space: nowrap;
+    }
+
+    .petak__table thead input {
+        width: 100%;
+        min-width: 7rem;
+    }
+
+    .petak__table th[data-fit-content] input {
+        min-width: 0;
+    }
+}
+
+@layer petak.theme {
+    .petak__table {
+        color: var(--petak-color);
+        background: var(--petak-surface);
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        overflow: hidden;
+    }
+
+    .petak--bordered .petak__table {
+        border: var(--petak-border-width) solid var(--petak-border-color);
+        border-radius: var(--petak-radius);
+    }
+
+    .petak--bordered .petak__renderer:has(+ .petak__pagination) .petak__table {
+        border-end-start-radius: 0;
+        border-end-end-radius: 0;
+    }
+
+    .petak__table th,
+    .petak__table td {
+        border-block-end: var(--petak-border-width) solid var(--petak-row-divider);
+    }
+
+    .petak--bordered .petak__table :where(th, td) + :where(th, td) {
+        border-inline-start: var(--petak-border-width) solid var(--petak-row-divider);
+    }
+
+    .petak__table thead th {
+        color: var(--petak-header-color);
+        font-size: var(--petak-font-size-sm);
+        font-weight: 700;
+        letter-spacing: .015em;
+        background: var(--petak-header-surface);
+    }
+
+    .petak__table thead tr:first-child th {
+        height: var(--petak-row-height);
+        border-block-end-color: var(--petak-border-color);
+    }
+
+    .petak__table thead tr:nth-child(2) th {
+        padding-block: .4rem;
+        background: var(--petak-filter-surface);
+    }
+
+    .petak__table thead tr:nth-child(2) th:empty {
+        background: var(--petak-filter-surface);
+    }
+
+    .petak__table tbody tr:last-child td {
+        border-block-end: 0;
+    }
+
+    .petak__table tbody tr:hover {
+        background: var(--petak-surface-hover);
+    }
+
+    .petak--striped .petak__table tbody tr:nth-child(even) {
+        background: color-mix(in srgb, var(--petak-surface-hover) 65%, var(--petak-surface));
+    }
+
+    .petak__table a {
+        color: var(--petak-accent);
+        text-decoration: none;
+    }
+
+    .petak__pagination {
+        min-height: var(--petak-footer-height);
+        padding: .5rem var(--petak-cell-padding-inline);
+        color: var(--petak-muted-color);
+        background: var(--petak-footer-surface);
+        border: var(--petak-border-width) solid var(--petak-border-color);
+        border-radius: var(--petak-radius);
+        font-size: var(--petak-font-size-sm);
+        font-weight: 500;
+    }
+
+    .petak__pagination-summary {
+        flex: 1 1 auto;
+        min-width: 12rem;
+        white-space: nowrap;
+    }
+
+    .petak--bordered .petak__renderer + .petak__pagination {
+        margin-block-start: calc(var(--petak-border-width) * -1);
+        border-start-start-radius: 0;
+        border-start-end-radius: 0;
+    }
+
+    .petak__pagination a {
+        display: inline-flex;
+        align-items: center;
+        min-height: var(--petak-control-height);
+        padding-inline: .7rem;
+        color: var(--petak-color);
+        background: var(--petak-surface-raised);
+        border: var(--petak-border-width) solid var(--petak-border-color);
+        border-radius: var(--petak-radius);
+        font-weight: 600;
+    }
+
+    .petak__table thead a {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        color: inherit;
+    }
+
+    .petak__table thead a:hover {
+        color: var(--petak-accent);
+    }
+
+}

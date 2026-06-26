@@ -1,0 +1,51 @@
+{
+    "name": "@poshtive/petak",
+    "description": "Headless, composable data grids for Laravel.",
+    "version": "0.1.0",
+    "license": "MIT",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/poshtive/petak.git"
+    },
+    "homepage": "https://github.com/poshtive/petak#readme",
+    "bugs": {
+        "url": "https://github.com/poshtive/petak/issues"
+    },
+    "keywords": [
+        "laravel",
+        "grid",
+        "tabulator",
+        "datagrid",
+        "petak"
+    ],
+    "exports": {
+        ".": "./resources/js/petak.js",
+        "./petak.css": "./resources/css/petak.css",
+        "./structural.css": "./resources/css/structural.css",
+        "./themes/bootstrap.css": "./resources/css/themes/bootstrap.css"
+    },
+    "files": [
+        "resources/js",
+        "resources/css",
+        "README.md",
+        "LICENSE",
+        "package.json"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "test": "vitest run",
+        "release:check": "pnpm test && composer validate --no-check-publish",
+        "release:npm:dry-run": "npm publish --dry-run"
+    },
+    "peerDependencies": {
+        "tabulator-tables": "^6.3.0"
+    },
+    "devDependencies": {
+        "jsdom": "^26.1.0",
+        "tabulator-tables": "^6.3.0",
+        "vitest": "^3.2.0"
+    }
+}
