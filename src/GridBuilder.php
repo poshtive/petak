@@ -7,6 +7,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use LogicException;
 use Poshtive\Petak\Actions\ActionResponder;
 use Poshtive\Petak\Actions\BulkAction;
 use Poshtive\Petak\Enums\GridMode;
@@ -18,6 +19,10 @@ use Symfony\Component\HttpFoundation\Response;
 final class GridBuilder
 {
     private string $name = 'petak';
+
+    private mixed $source = null;
+
+    private bool $hasSource = false;
 
     /** @var array<string, Column> */
     private array $columns = [];
@@ -65,7 +70,6 @@ final class GridBuilder
     private array $exports = [];
 
     public function __construct(
-        private mixed $source,
         private readonly SourceFactory $sourceFactory,
         private readonly GridEngine $engine,
     ) {
@@ -77,6 +81,14 @@ final class GridBuilder
         $this->bordered = (bool) config('petak.appearance.bordered', true);
         $this->theme = config('petak.appearance.theme');
         $this->verticalAlign((string) config('petak.appearance.vertical_align', 'middle'));
+    }
+
+    public function source(mixed $source): self
+    {
+        $this->source = $source;
+        $this->hasSource = true;
+
+        return $this;
     }
 
     public function name(string $name): self
@@ -251,6 +263,10 @@ final class GridBuilder
 
     public function definition(): GridDefinition
     {
+        if (! $this->hasSource) {
+            throw new LogicException('Petak grid source has not been configured.');
+        }
+
         $source = $this->sourceFactory->make($this->source);
         $mode = $this->mode === GridMode::Auto
             ? ($source->isLocal() ? GridMode::Local : GridMode::Remote)

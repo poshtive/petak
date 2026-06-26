@@ -7,9 +7,9 @@ once, then render it with Tabulator, Blade, or Livewire transport.
 
 - [Installation](getting-started/installation.md)
 - [Quick Start](getting-started/quick-start.md)
+- [Grid Initialization Patterns](getting-started/grid-initialization-patterns.md)
 - [Assets and Rendering](getting-started/assets-and-rendering.md)
 - [Demo Gallery](demo/README.md)
-- [Runnable Laravel Demo](../demo/README.md)
 
 ## Guides
 

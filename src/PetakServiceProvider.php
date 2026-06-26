@@ -14,6 +14,7 @@ final class PetakServiceProvider extends ServiceProvider
         $this->app->singleton(SourceFactory::class);
         $this->app->singleton(GridEngine::class);
         $this->app->singleton('petak', fn ($app) => new PetakManager(
+            $app,
             $app->make(SourceFactory::class),
             $app->make(GridEngine::class),
         ));

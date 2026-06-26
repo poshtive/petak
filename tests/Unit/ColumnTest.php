@@ -2,6 +2,7 @@
 
 namespace Poshtive\Petak\Tests\Unit;
 
+use Illuminate\Support\HtmlString;
 use Illuminate\Validation\ValidationException;
 use Poshtive\Petak\Column;
 use Poshtive\Petak\Columns\ActionColumn;
@@ -46,6 +47,23 @@ class ColumnTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
         Column::make('name')->verticalAlign('center');
+    }
+
+    public function test_export_fallback_uses_raw_value_without_display_html(): void
+    {
+        $column = Column::make('status')
+            ->trustedHtml()
+            ->valueUsing(fn () => new HtmlString('<strong>Active</strong>'));
+
+        $this->assertSame('<strong>Active</strong>', $column->resolveValue([]));
+        $this->assertSame('', $column->resolveExportValue([]));
+
+        $exportColumn = Column::make('status')
+            ->trustedHtml()
+            ->valueUsing(fn () => new HtmlString('<strong>Active</strong>'))
+            ->exportUsing(fn () => 'Active');
+
+        $this->assertSame('Active', $exportColumn->resolveExportValue([]));
     }
 
     public function test_typed_filters_normalize_values_and_reject_invalid_operators(): void

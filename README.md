@@ -8,9 +8,9 @@ Headless, composable data grids for Laravel.
 
 - [Installation](docs/getting-started/installation.md)
 - [Quick Start](docs/getting-started/quick-start.md)
+- [Grid Initialization Patterns](docs/getting-started/grid-initialization-patterns.md)
 - [Demo Gallery](docs/demo/README.md)
 - [Kitchen Sink Demo](docs/demo/kitchen-sink.md)
-- [Runnable Laravel Demo](demo/README.md)
 - [Guides](docs/README.md#guides)
 - [Reference](docs/README.md#reference)
 
@@ -24,7 +24,8 @@ use Poshtive\Petak\Facades\Petak;
 
 public function index(Request $request)
 {
-    $grid = Petak::for(User::query())
+    $grid = Petak::grid()
+        ->source(User::query())
         ->name('users')
         ->globalSearch()
         ->columns([
@@ -40,6 +41,15 @@ public function index(Request $request)
 
 ```blade
 <x-petak::grid :grid="$grid" />
+```
+
+For one-off grids, `Petak::for($source)` is the shorthand alias for
+`Petak::grid()->source($source)`:
+
+```php
+$grid = Petak::for(User::query())
+    ->name('users')
+    ->columns(['id', 'name', 'email']);
 ```
 
 ## Blade renderer
@@ -66,7 +76,8 @@ class UsersTable extends Component
 
     protected function petakGrid(string $name): GridBuilder
     {
-        return Petak::for(User::query())
+        return Petak::grid()
+            ->source(User::query())
             ->name($name)
             ->columns(['id', 'email']);
     }

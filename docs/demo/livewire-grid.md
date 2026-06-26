@@ -15,7 +15,8 @@ final class UsersTable extends Component
 
     protected function petakGrid(string $name): GridBuilder
     {
-        return Petak::for(User::query())
+        return Petak::grid()
+            ->source(User::query())
             ->name($name)
             ->columns(['id', 'name', 'email']);
     }
@@ -40,4 +41,3 @@ document.dispatchEvent(new CustomEvent('petak:refresh', {
     detail: { grid: 'users' },
 }));
 ```
-

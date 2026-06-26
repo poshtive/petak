@@ -3,8 +3,20 @@
 Create a builder with the facade:
 
 ```php
-$grid = Petak::for(User::query());
+$grid = Petak::grid()
+    ->source(User::query());
 ```
+
+`Petak::for($source)` is a shorthand alias for `Petak::grid()->source($source)`.
+
+## Source
+
+```php
+source(mixed $source): self
+```
+
+`source()` accepts Eloquent builders, query builders, arrays, collections, and
+custom `DataSource` instances.
 
 ## Identity
 

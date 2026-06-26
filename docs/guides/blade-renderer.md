@@ -10,7 +10,8 @@ It uses the same grid definition and data source execution as the Tabulator
 renderer. State is stored in the URL under `petak_state[grid-name]`.
 
 ```php
-$grid = Petak::for(User::query())
+$grid = Petak::grid()
+    ->source(User::query())
     ->name('users')
     ->globalSearch()
     ->columns([
@@ -22,4 +23,3 @@ $grid = Petak::for(User::query())
 
 Use the Blade renderer for simple server-rendered screens and no-JavaScript
 fallbacks.
-

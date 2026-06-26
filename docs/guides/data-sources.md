@@ -6,7 +6,8 @@ data sources.
 ## Eloquent
 
 ```php
-Petak::for(User::query())
+Petak::grid()
+    ->source(User::query())
     ->name('users')
     ->columns(['id', 'name', 'email']);
 ```
@@ -16,15 +17,14 @@ Use Eloquent when columns rely on model accessors, relations, or view partials.
 ## Query Builder
 
 ```php
-Petak::for(
-    DB::table('users')
+Petak::grid()
+    ->source(DB::table('users')
         ->join('teams', 'users.team_id', '=', 'teams.id')
         ->select([
             'users.id',
             'users.name',
             'teams.name as team_name',
-        ])
-)
+        ]))
     ->name('users')
     ->columns([
         Column::make('id')->sortBy('users.id')->sortable(),
@@ -42,10 +42,12 @@ field.
 ## Arrays and Collections
 
 ```php
-Petak::for([
-    ['id' => 1, 'name' => 'Ada'],
-    ['id' => 2, 'name' => 'Linus'],
-])->columns(['id', 'name']);
+Petak::grid()
+    ->source([
+        ['id' => 1, 'name' => 'Ada'],
+        ['id' => 2, 'name' => 'Linus'],
+    ])
+    ->columns(['id', 'name']);
 ```
 
 Array and collection grids are local grids. They are best for small in-memory
@@ -79,4 +81,3 @@ final class ApiSource implements DataSource
     }
 }
 ```
-

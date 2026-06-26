@@ -36,7 +36,8 @@ final class UserGridController
 {
     public function __invoke(Request $request)
     {
-        $grid = Petak::for(User::query()->with('team'))
+        $grid = Petak::grid()
+            ->source(User::query()->with('team'))
             ->name('admin-users')
             ->rowKey('uuid')
             ->globalSearch()
@@ -138,4 +139,3 @@ final class UserGridController
     </a>
 </div>
 ```
-

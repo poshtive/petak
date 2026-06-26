@@ -322,9 +322,13 @@ class Column
 
     public function resolveExportValue(mixed $row): mixed
     {
-        return $this->exportResolver !== null
-            ? ($this->exportResolver)($row)
-            : $this->resolveValue($row);
+        if ($this->exportResolver !== null) {
+            return ($this->exportResolver)($row);
+        }
+
+        $value = $this->resolveRawValue($row);
+
+        return $value instanceof Htmlable ? '' : $value;
     }
 
     public function isSearchable(): bool
@@ -339,11 +343,16 @@ class Column
 
     public function resolveValue(mixed $row): mixed
     {
-        $value = $this->valueResolver !== null
-            ? ($this->valueResolver)($row)
-            : data_get($row, $this->value);
+        $value = $this->resolveRawValue($row);
 
         return $value instanceof Htmlable ? $value->toHtml() : $value;
+    }
+
+    private function resolveRawValue(mixed $row): mixed
+    {
+        return $this->valueResolver !== null
+            ? ($this->valueResolver)($row)
+            : data_get($row, $this->value);
     }
 
     /** @return array<string, mixed> */

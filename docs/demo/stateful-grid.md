@@ -6,7 +6,8 @@ local storage.
 ```php
 use Poshtive\Petak\State\GridState;
 
-$grid = Petak::for(User::query())
+$grid = Petak::grid()
+    ->source(User::query())
     ->name('users')
     ->state(
         GridState::make('admin.users')
@@ -21,4 +22,3 @@ $grid = Petak::for(User::query())
 ```
 
 Version the state when changing column keys or filter behavior.
-

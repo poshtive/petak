@@ -4,7 +4,8 @@ Enable global search on the grid and mark individual columns as searchable.
 Filters are enabled per column.
 
 ```php
-$grid = Petak::for(User::query())
+$grid = Petak::grid()
+    ->source(User::query())
     ->name('users')
     ->globalSearch()
     ->columns([
@@ -43,4 +44,3 @@ Column::make('team')
         });
     });
 ```
-

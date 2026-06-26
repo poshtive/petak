@@ -9,7 +9,8 @@ The Blade renderer uses plain server-rendered HTML and URL query state.
 Controller:
 
 ```php
-$grid = Petak::for(User::query())
+$grid = Petak::grid()
+    ->source(User::query())
     ->name('users')
     ->globalSearch()
     ->columns([
@@ -24,4 +25,3 @@ return $grid->handle($request, 'users.index', [
 ```
 
 Blade state is stored under `petak_state[grid-name]`.
-

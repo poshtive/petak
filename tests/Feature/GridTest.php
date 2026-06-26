@@ -21,6 +21,7 @@ use Poshtive\Petak\Exports\CsvExport;
 use Poshtive\Petak\Exports\XlsxExport;
 use Poshtive\Petak\Facades\Petak;
 use Poshtive\Petak\Filters\TextFilter;
+use Poshtive\Petak\Grid;
 use Poshtive\Petak\GridBuilder;
 use Poshtive\Petak\GridRequest;
 use Poshtive\Petak\State\GridState;
@@ -240,10 +241,58 @@ class GridTest extends TestCase
 
     public function test_named_grid_uses_a_fresh_factory_instance(): void
     {
-        Petak::define('scores', fn () => Petak::for([['score' => 10]])->columns(['score']));
+        Petak::define('scores', fn (GridBuilder $grid) => $grid
+            ->source([['score' => 10]])
+            ->columns(['score']));
 
         $this->assertNotSame(Petak::get('scores'), Petak::get('scores'));
         $this->assertSame('scores', Petak::get('scores')->definition()->name);
+    }
+
+    public function test_grid_builder_requires_source(): void
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Petak grid source has not been configured.');
+
+        Petak::grid()->columns(['name'])->definition();
+    }
+
+    public function test_for_is_a_shorthand_alias_for_grid_source(): void
+    {
+        $canonical = Petak::grid()
+            ->source([['name' => 'Alpha']])
+            ->columns(['name'])
+            ->execute([
+                'version' => '1',
+                'page' => ['number' => 1, 'size' => 25],
+                'sort' => [],
+                'filters' => [],
+            ]);
+
+        $shorthand = Petak::for([['name' => 'Alpha']])
+            ->columns(['name'])
+            ->execute([
+                'version' => '1',
+                'page' => ['number' => 1, 'size' => 25],
+                'sort' => [],
+                'filters' => [],
+            ]);
+
+        $this->assertSame($canonical->data, $shorthand->data);
+    }
+
+    public function test_class_grid_is_resolved_through_container(): void
+    {
+        $this->app->instance(PetakGridSourceDependency::class, new PetakGridSourceDependency([
+            ['id' => 1, 'name' => 'Injected'],
+        ]));
+
+        $grid = Petak::grid(PetakInjectedGrid::class);
+        $definition = $grid->definition();
+
+        $this->assertSame('injected-items', $definition->name);
+        $this->assertSame(GridMode::Local, $definition->mode);
+        $this->assertSame(['id', 'name'], array_keys($definition->columns));
     }
 
     public function test_global_search_and_blade_action_column_are_applied_server_side(): void
@@ -623,4 +672,22 @@ class PetakGroup extends Model
     public $timestamps = false;
 
     protected $guarded = [];
+}
+
+class PetakGridSourceDependency
+{
+    public function __construct(public array $rows) {}
+}
+
+class PetakInjectedGrid extends Grid
+{
+    public function __construct(private readonly PetakGridSourceDependency $source) {}
+
+    public function configure(GridBuilder $grid): void
+    {
+        $grid
+            ->source($this->source->rows)
+            ->name('injected-items')
+            ->columns(['id', 'name']);
+    }
 }

@@ -77,13 +77,13 @@ final class XlsxExport
         $writer->openToFile('php://output');
 
         $writer->addRow($rowClass::fromValues(array_map(
-            static fn(Column $column) => $column->toArray()['label'],
+            static fn (Column $column) => $column->toArray()['label'],
             $columns,
         )));
 
         foreach ($rows as $row) {
             $writer->addRow($rowClass::fromValues(array_map(
-                static fn(Column $column) => strip_tags((string) $column->resolveExportValue($row)),
+                static fn (Column $column) => strip_tags((string) $column->resolveExportValue($row)),
                 $columns,
             )));
         }

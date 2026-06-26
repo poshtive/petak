@@ -14,7 +14,8 @@ final class UsersTable extends Component
 
     protected function petakGrid(string $name): GridBuilder
     {
-        return Petak::for(User::query())
+        return Petak::grid()
+            ->source(User::query())
             ->name($name)
             ->columns(['id', 'name', 'email']);
     }
@@ -36,4 +37,3 @@ Render:
 
 The renderer is wrapped with `wire:ignore`. Petak initializes newly morphed
 grids once and destroys renderer instances when their DOM is removed.
-
