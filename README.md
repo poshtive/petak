@@ -11,6 +11,8 @@ Headless, composable data grids for Laravel.
 - [Grid Initialization Patterns](docs/getting-started/grid-initialization-patterns.md)
 - [Demo Gallery](docs/demo/README.md)
 - [Kitchen Sink Demo](docs/demo/kitchen-sink.md)
+- [Authorization](docs/guides/authorization.md)
+- [Multiple Grids](docs/guides/multiple-grids.md)
 - [Guides](docs/README.md#guides)
 - [Reference](docs/README.md#reference)
 

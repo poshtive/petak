@@ -164,6 +164,15 @@ class GridTest extends TestCase
         }
     }
 
+    public function test_invalid_json_petak_request_is_rejected(): void
+    {
+        $this->withHeader('X-Petak-Request', 'items')
+            ->withHeader('Accept', 'application/json')
+            ->get('/petak/items?petak_request='.urlencode('{"version":"1"'))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('petak_request');
+    }
+
     public function test_array_and_collection_sources_have_local_filter_sort_and_pagination(): void
     {
         $rows = [
@@ -612,7 +621,7 @@ class GridTest extends TestCase
             ->assertSee('"endpoint":"http:\/\/localhost\/petak\/items"', false);
 
         Route::get('/petak/separate-endpoint', function () {
-            return view('petak-test::grid', [
+            return View::make('petak-test::grid', [
                 'grid' => Petak::for(DB::table('petak_items'))
                     ->name('separate-endpoint')
                     ->columns(['id']),
@@ -793,6 +802,14 @@ class GridTest extends TestCase
     }
 }
 
+/**
+ * @property int $id
+ * @property int $group_id
+ * @property string $name
+ * @property int $score
+ * @property bool $active
+ * @property-read PetakGroup $group
+ */
 class PetakItem extends Model
 {
     protected $table = 'petak_items';
@@ -807,6 +824,10 @@ class PetakItem extends Model
     }
 }
 
+/**
+ * @property int $id
+ * @property string $name
+ */
 class PetakGroup extends Model
 {
     protected $table = 'petak_groups';

@@ -4,3 +4,4 @@
 /.phpunit.result.cache
 /composer.lock
 /pnpm-lock.yaml
+.vscode/

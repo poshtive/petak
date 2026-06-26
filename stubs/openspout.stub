@@ -1,0 +1,24 @@
+<?php
+
+namespace OpenSpout\Common\Entity;
+
+final class Row
+{
+    /**
+     * @param  array<int, mixed>  $cellValues
+     */
+    public static function fromValues(array $cellValues): self {}
+}
+
+namespace OpenSpout\Writer\XLSX;
+
+use OpenSpout\Common\Entity\Row;
+
+final class Writer
+{
+    public function openToFile(string $outputFilePath): void {}
+
+    public function addRow(Row $row): void {}
+
+    public function close(): void {}
+}

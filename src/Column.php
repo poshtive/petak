@@ -11,6 +11,7 @@ use Poshtive\Petak\Filters\Filter;
 use Poshtive\Petak\Filters\NumberFilter;
 use Poshtive\Petak\Filters\TextFilter;
 
+/** @phpstan-consistent-constructor */
 class Column
 {
     private string $label;

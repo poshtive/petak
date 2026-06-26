@@ -25,6 +25,7 @@
         "illuminate/view": "^13.0"
     },
     "require-dev": {
+        "larastan/larastan": "^3.10",
         "laravel/pint": "^1.29.3",
         "orchestra/testbench": "^11.1",
         "phpunit/phpunit": "^11.5"
@@ -43,6 +44,7 @@
         }
     },
     "scripts": {
+        "analyse": "phpstan analyse --memory-limit=1G",
         "test": "phpunit",
         "test:unit": "phpunit --testsuite Unit",
         "test:feature": "phpunit --testsuite Feature"

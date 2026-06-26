@@ -26,6 +26,12 @@ final readonly class GridRequest
 
         if (is_string($payload)) {
             $payload = json_decode($payload, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw ValidationException::withMessages([
+                    'petak_request' => 'Petak request payload must be valid JSON.',
+                ]);
+            }
         }
 
         $payload = is_array($payload) ? $payload : $request->all();
