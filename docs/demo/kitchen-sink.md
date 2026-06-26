@@ -49,6 +49,7 @@ final class UserGridController
             ->bulkActions([
                 BulkAction::make('activate')
                     ->label('Activate')
+                    ->authorize(fn () => $request->user()->can('update users'))
                     ->handle(fn (Selection $selection) =>
                         User::whereIn('uuid', $selection->keys())
                             ->update(['active' => true])

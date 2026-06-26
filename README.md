@@ -134,6 +134,7 @@ $grid
     ->rowKey('uuid')
     ->bulkActions([
         BulkAction::make('activate')
+            ->authorize(fn () => auth()->user()->can('update users'))
             ->handle(fn (Selection $selection) =>
                 User::whereKey($selection->keys())->update(['active' => true])
             ),

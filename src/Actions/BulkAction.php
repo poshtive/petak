@@ -48,12 +48,14 @@ final class BulkAction
         return $this->name;
     }
 
+    public function authorized(): bool
+    {
+        return $this->authorization === null || ($this->authorization)();
+    }
+
     public function run(Selection $selection): mixed
     {
-        abort_unless(
-            $this->authorization === null || ($this->authorization)(),
-            403,
-        );
+        abort_unless($this->authorized(), 403);
 
         return ($this->handler)($selection);
     }

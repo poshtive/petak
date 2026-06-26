@@ -260,6 +260,19 @@ class GridTest extends TestCase
         Petak::grid()->columns(['name'])->definition();
     }
 
+    public function test_grid_definition_is_cached_and_invalidated_after_mutation(): void
+    {
+        $grid = Petak::for([['name' => 'Alpha']])->columns(['name']);
+        $first = $grid->definition();
+
+        $this->assertSame($first, $grid->definition());
+
+        $grid->name('renamed');
+
+        $this->assertNotSame($first, $grid->definition());
+        $this->assertSame('renamed', $grid->definition()->name);
+    }
+
     public function test_for_is_a_shorthand_alias_for_grid_source(): void
     {
         $canonical = Petak::grid()
@@ -629,6 +642,42 @@ class GridTest extends TestCase
         ]);
 
         $xlsx->assertUnprocessable();
+    }
+
+    public function test_unauthorized_bulk_actions_are_hidden_and_rejected(): void
+    {
+        Route::post('/petak/unauthorized-bulk', function (Request $request) {
+            return Petak::for(PetakItem::query())
+                ->name('unauthorized-bulk')
+                ->columns(['id'])
+                ->bulkActions([
+                    BulkAction::make('hidden')
+                        ->authorize(fn () => false)
+                        ->handle(fn () => 'nope'),
+                ])
+                ->handle($request, 'petak-test::grid');
+        });
+
+        $configuration = Petak::for([['id' => 1]])
+            ->name('unauthorized-bulk')
+            ->columns(['id'])
+            ->bulkActions([
+                BulkAction::make('hidden')
+                    ->authorize(fn () => false)
+                    ->handle(fn () => 'nope'),
+            ])
+            ->configuration('/petak/unauthorized-bulk');
+
+        $this->assertSame([], $configuration['bulk_actions']);
+
+        $this->postJson('/petak/unauthorized-bulk', [
+            'petak_action' => [
+                'grid' => 'unauthorized-bulk',
+                'type' => 'bulk',
+                'name' => 'hidden',
+                'keys' => [1],
+            ],
+        ])->assertForbidden();
     }
 
     public function test_xlsx_export_is_hidden_when_optional_writer_is_missing(): void

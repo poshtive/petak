@@ -14,6 +14,7 @@ $grid
     ->bulkActions([
         BulkAction::make('archive')
             ->label('Archive')
+            ->authorize(fn () => auth()->user()->can('archive users'))
             ->handle(fn (Selection $selection) =>
                 User::whereIn('uuid', $selection->keys())
                     ->update(['archived_at' => now()])
@@ -30,4 +31,3 @@ $grid
 ```
 
 Action requests are handled by the grid route over `POST`.
-

@@ -353,6 +353,7 @@ describe('Petak transports and lifecycle', () => {
 
         expect(renderer.querySelector('.petak__page-size-control')).not.toBeNull();
         expect(renderer.querySelector('.petak__page-navigation')).not.toBeNull();
+        expect(tables[0].blockRedraw).not.toHaveBeenCalled();
     });
 
     it('fits configured columns after data is rendered', () => {
@@ -397,6 +398,12 @@ describe('Petak transports and lifecycle', () => {
         tables[0].columns.set('id', idColumn);
         tables[0].columns.set('name', nameColumn);
         tables[0].columns.set('action', actionColumn);
+        tables[0].handlers.tableBuilt();
+        idColumn.setWidth.mockClear();
+        nameColumn.setWidth.mockClear();
+        actionColumn.setWidth.mockClear();
+        tables[0].blockRedraw.mockClear();
+        tables[0].restoreRedraw.mockClear();
         tables[0].handlers.dataProcessed();
         tables[0].handlers.renderComplete();
 

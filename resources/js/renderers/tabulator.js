@@ -247,7 +247,7 @@ export function createPetakGrid(element, options = {}) {
     let fitContentPending = true;
     let fittingContent = false;
     const fitColumns = () => {
-        if (fittingContent) {
+        if (!tableReady || fittingContent) {
             return;
         }
 
@@ -263,8 +263,11 @@ export function createPetakGrid(element, options = {}) {
     structurePetakPaginator(target);
     table.on?.('tableBuilt', () => {
         tableReady = true;
-        fitContentPending = false;
-        fitColumns();
+
+        if (fitContentPending) {
+            fitContentPending = false;
+            fitColumns();
+        }
 
         if (!remote && search?.value) {
             applyLocalSearch();
@@ -276,7 +279,7 @@ export function createPetakGrid(element, options = {}) {
     table.on?.('renderComplete', () => {
         structurePetakPaginator(target);
 
-        if (fitContentPending) {
+        if (tableReady && fitContentPending) {
             fitContentPending = false;
             fitColumns();
         }

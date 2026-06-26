@@ -69,6 +69,8 @@ final class GridBuilder
     /** @var array<string, CsvExport|XlsxExport> */
     private array $exports = [];
 
+    private ?GridDefinition $definition = null;
+
     public function __construct(
         private readonly SourceFactory $sourceFactory,
         private readonly GridEngine $engine,
@@ -87,6 +89,7 @@ final class GridBuilder
     {
         $this->source = $source;
         $this->hasSource = true;
+        $this->forgetDefinition();
 
         return $this;
     }
@@ -94,6 +97,7 @@ final class GridBuilder
     public function name(string $name): self
     {
         $this->name = Str::slug($name);
+        $this->forgetDefinition();
 
         return $this;
     }
@@ -121,6 +125,8 @@ final class GridBuilder
             $this->columns[$column->key()] = $column;
         }
 
+        $this->forgetDefinition();
+
         return $this;
     }
 
@@ -132,6 +138,8 @@ final class GridBuilder
             $column->sortable($enabled);
         }
 
+        $this->forgetDefinition();
+
         return $this;
     }
 
@@ -142,6 +150,8 @@ final class GridBuilder
         foreach ($this->columns as $column) {
             $column->filterable($enabled);
         }
+
+        $this->forgetDefinition();
 
         return $this;
     }
@@ -183,6 +193,7 @@ final class GridBuilder
     public function mode(GridMode|string $mode): self
     {
         $this->mode = is_string($mode) ? GridMode::from($mode) : $mode;
+        $this->forgetDefinition();
 
         return $this;
     }
@@ -192,6 +203,7 @@ final class GridBuilder
         $this->defaultPageSize = $defaultPageSize;
         $this->maxPageSize = $maxPageSize;
         $this->pageSizes = $pageSizes ?: $this->pageSizes;
+        $this->forgetDefinition();
 
         return $this;
     }
@@ -199,6 +211,7 @@ final class GridBuilder
     public function rowKey(string $key): self
     {
         $this->rowKey = $key;
+        $this->forgetDefinition();
 
         return $this;
     }
@@ -210,6 +223,7 @@ final class GridBuilder
         }
 
         $this->density = $density;
+        $this->forgetDefinition();
 
         return $this;
     }
@@ -217,6 +231,7 @@ final class GridBuilder
     public function striped(bool $enabled = true): self
     {
         $this->striped = $enabled;
+        $this->forgetDefinition();
 
         return $this;
     }
@@ -224,6 +239,7 @@ final class GridBuilder
     public function bordered(bool $enabled = true): self
     {
         $this->bordered = $enabled;
+        $this->forgetDefinition();
 
         return $this;
     }
@@ -231,6 +247,7 @@ final class GridBuilder
     public function theme(?string $theme): self
     {
         $this->theme = $theme;
+        $this->forgetDefinition();
 
         return $this;
     }
@@ -242,6 +259,7 @@ final class GridBuilder
         }
 
         $this->verticalAlign = $align;
+        $this->forgetDefinition();
 
         return $this;
     }
@@ -249,6 +267,7 @@ final class GridBuilder
     public function className(?string $className): self
     {
         $this->className = $className;
+        $this->forgetDefinition();
 
         return $this;
     }
@@ -257,12 +276,17 @@ final class GridBuilder
     public function defaultSort(array $sort): self
     {
         $this->defaultSort = $sort;
+        $this->forgetDefinition();
 
         return $this;
     }
 
     public function definition(): GridDefinition
     {
+        if ($this->definition !== null) {
+            return $this->definition;
+        }
+
         if (! $this->hasSource) {
             throw new LogicException('Petak grid source has not been configured.');
         }
@@ -272,7 +296,7 @@ final class GridBuilder
             ? ($source->isLocal() ? GridMode::Local : GridMode::Remote)
             : $this->mode;
 
-        return new GridDefinition(
+        return $this->definition = new GridDefinition(
             name: $this->name,
             source: $source,
             columns: $this->columns,
@@ -360,7 +384,10 @@ final class GridBuilder
             'state' => $this->state?->toArray(),
             'bulk_actions' => array_values(array_map(
                 static fn (BulkAction $action) => $action->toArray(),
-                $this->bulkActions,
+                array_filter(
+                    $this->bulkActions,
+                    static fn (BulkAction $action) => $action->authorized(),
+                ),
             )),
             'exports' => array_values(array_map(
                 static fn (CsvExport|XlsxExport $export) => $export->toArray(),
@@ -406,5 +433,10 @@ final class GridBuilder
             bulkActions: $this->bulkActions,
             exports: $this->exports,
         ))->respond($request);
+    }
+
+    private function forgetDefinition(): void
+    {
+        $this->definition = null;
     }
 }

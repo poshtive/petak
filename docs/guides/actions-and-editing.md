@@ -20,12 +20,16 @@ use Poshtive\Petak\Actions\Selection;
 $grid->bulkActions([
     BulkAction::make('activate')
         ->label('Activate')
+        ->authorize(fn () => auth()->user()->can('update users'))
         ->handle(fn (Selection $selection) =>
             User::whereIn('uuid', $selection->keys())
                 ->update(['active' => true])
         ),
 ]);
 ```
+
+Unauthorized bulk actions are hidden from the grid schema and still rejected
+with `403` if a client posts the action manually.
 
 ## Inline Editing
 
@@ -48,4 +52,3 @@ Route::match(['get', 'post'], '/users', [UserController::class, 'index']);
 ```
 
 Petak accepts mutation/export actions over POST.
-
