@@ -3,10 +3,9 @@
 Each grid on a page needs a stable, unique name. Petak uses the name to route
 remote data requests, actions, exports, and Blade query state.
 
-## One Controller Method
+## Page Helper
 
-Build both grids, then let the matching grid answer remote data or action
-requests before returning the page:
+Use `Petak::page()` when one route renders and serves multiple grids:
 
 ```php
 use Illuminate\Http\Request;
@@ -15,29 +14,23 @@ use Poshtive\Petak\Facades\Petak;
 
 public function index(Request $request)
 {
-    $users = Petak::for(User::query())
-        ->name('users')
-        ->columns([
-            Column::make('id')->integer()->sortable(),
-            Column::make('email')->searchable()->sortable()->filterable(),
-        ]);
-
-    $orders = Petak::for(Order::query())
-        ->name('orders')
-        ->columns([
-            Column::make('id')->integer()->sortable(),
-            Column::make('total')->number()->sortable(),
-        ]);
-
-    foreach ([$users, $orders] as $grid) {
-        if ($grid->matches($request)) {
-            return $grid->response($request);
-        }
-    }
-
-    return view('dashboard.index', compact('users', 'orders'));
+    return Petak::page()
+        ->grid('users', fn () => Petak::for(User::query())
+            ->columns([
+                Column::make('id')->integer()->sortable(),
+                Column::make('email')->searchable()->sortable()->filterable(),
+            ]))
+        ->grid('orders', fn () => Petak::for(Order::query())
+            ->columns([
+                Column::make('id')->integer()->sortable(),
+                Column::make('total')->number()->sortable(),
+            ]))
+        ->handle($request, 'dashboard.index');
 }
 ```
+
+The grid name passed to `grid()` is applied to the builder and used as the
+default view variable.
 
 Render each grid with its own builder:
 
@@ -46,30 +39,48 @@ Render each grid with its own builder:
 <x-petak::grid :grid="$orders" />
 ```
 
+`handle()` returns the matching grid response for remote data requests, runs
+matching grid actions, or renders the view with all grid builders.
+
+## Builder Factories
+
+Factories may return a `GridBuilder`:
+
+```php
+->grid('users', fn () => Petak::for(User::query())->columns(['id', 'email']))
+```
+
+They may also configure the provided builder:
+
+```php
+->grid('orders', fn (GridBuilder $grid) => $grid
+    ->source(Order::query())
+    ->columns(['id', 'total']))
+```
+
+Grid classes are supported too:
+
+```php
+->grid('users', UsersGrid::class)
+```
+
+Use `as` when the view variable should differ from the grid request name:
+
+```php
+->grid('recent-users', UsersGrid::class, as: 'users')
+```
+
 ## Actions
 
 If a grid registers bulk actions, exports, or inline edits, route the page with
-both `GET` and `POST` and use `handle()` when a page only has one grid:
+both `GET` and `POST`:
 
 ```php
 Route::match(['get', 'post'], '/users', [UserController::class, 'index']);
 ```
 
-For pages with multiple action-enabled grids on the same route, check the
-action grid before returning the view:
-
-```php
-if ($request->input('petak_action.grid') === 'users') {
-    return $users->handle($request, 'dashboard.index', compact('users', 'orders'));
-}
-
-if ($request->input('petak_action.grid') === 'orders') {
-    return $orders->handle($request, 'dashboard.index', compact('users', 'orders'));
-}
-```
-
-For simpler controller flow, keep action-enabled grids on separate named routes
-or use separate endpoints for the grids with actions.
+`Petak::page()->handle()` reads `petak_action.grid` and dispatches the action to
+the matching registered grid.
 
 ## Separate Endpoints
 

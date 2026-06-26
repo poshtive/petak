@@ -99,6 +99,24 @@ Route::match(['get', 'post'], '/users', [UserController::class, 'index'])
 Petak detects grid data requests with the `X-Petak-Request` header or the
 `petak` query marker.
 
+## Multiple Grids on One Page
+
+Use `Petak::page()` when one controller method renders and serves more than one
+grid:
+
+```php
+public function dashboard(Request $request)
+{
+    return Petak::page()
+        ->grid('users', fn () => Petak::for(User::query())->columns(['id', 'email']))
+        ->grid('orders', fn () => Petak::for(Order::query())->columns(['id', 'total']))
+        ->handle($request, 'dashboard.index');
+}
+```
+
+The page helper routes remote data requests and action POSTs to the matching
+grid, then renders the view with `$users` and `$orders` grid builders.
+
 ## Separate Data Endpoint
 
 Use a separate endpoint when data responses need different middleware, cache

@@ -557,6 +557,67 @@ class GridTest extends TestCase
         $this->assertSame('Alpha', $result['data'][0]['name']);
     }
 
+    public function test_grid_page_handles_multiple_grids_data_requests_and_actions(): void
+    {
+        Route::match(['get', 'post'], '/petak/page', function (Request $request) {
+            return Petak::page()
+                ->grid('items', fn () => Petak::for(PetakItem::query())
+                    ->columns([
+                        Column::make('id')->integer()->sortable(),
+                        Column::make('name')->sortable(),
+                    ])
+                    ->bulkActions([
+                        BulkAction::make('score')->handle(
+                            fn ($selection) => PetakItem::query()
+                                ->whereKey($selection->keys())
+                                ->update(['score' => 77]),
+                        ),
+                    ]))
+                ->grid('groups', fn (GridBuilder $grid) => $grid
+                    ->source(DB::table('petak_groups'))
+                    ->columns([
+                        Column::make('id')->integer()->sortable(),
+                        Column::make('name')->sortable(),
+                    ]))
+                ->handle($request, fn ($page, array $data) => response()->json([
+                    'grids' => array_keys($data),
+                    'items' => $data['items']->definition()->name,
+                    'groups' => $data['groups']->definition()->name,
+                ]));
+        });
+
+        $this->get('/petak/page')
+            ->assertOk()
+            ->assertJsonPath('grids', ['items', 'groups'])
+            ->assertJsonPath('items', 'items')
+            ->assertJsonPath('groups', 'groups');
+
+        $payload = [
+            'version' => '1',
+            'grid' => 'groups',
+            'page' => ['number' => 1, 'size' => 25],
+            'sort' => [['field' => 'id', 'direction' => 'desc']],
+            'filters' => [],
+        ];
+
+        $this->withHeader('X-Petak-Request', 'groups')
+            ->get('/petak/page?petak_request='.urlencode(json_encode($payload)))
+            ->assertOk()
+            ->assertJsonPath('data.0.name', 'Secondary')
+            ->assertJsonPath('data.1.name', 'Primary');
+
+        $this->postJson('/petak/page', [
+            'petak_action' => [
+                'grid' => 'items',
+                'type' => 'bulk',
+                'name' => 'score',
+                'keys' => [1],
+            ],
+        ])->assertOk()->assertJsonPath('result', 1);
+
+        $this->assertSame(77, PetakItem::query()->findOrFail(1)->score);
+    }
+
     public function test_state_schema_and_advanced_filter_groups_use_page_pagination(): void
     {
         $grid = Petak::for(PetakItem::query())

@@ -41,6 +41,11 @@ final class PetakManager
         return $this->grid()->source($source);
     }
 
+    public function page(): GridPage
+    {
+        return new GridPage($this->container, $this->sourceFactory, $this->engine);
+    }
+
     public function define(string $name, Closure $factory): void
     {
         $this->definitions[$name] = $factory;
