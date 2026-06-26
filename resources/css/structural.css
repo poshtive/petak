@@ -1,9 +1,5 @@
 @layer petak.vendor, petak.structure, petak.theme;
 
-@import 'tabulator-tables/dist/css/tabulator.min.css' layer(petak.vendor);
-@import './renderers/tabulator.css';
-@import './renderers/blade.css';
-
 @layer petak.structure {
     .petak {
         position: relative;

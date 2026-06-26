@@ -17,6 +17,9 @@ class StylingTest extends TestCase
         $bootstrap = file_get_contents($root.'/resources/css/themes/bootstrap.css');
 
         $this->assertStringContainsString('"./structural.css"', $package);
+        $this->assertStringContainsString('"./renderers/blade.css"', $package);
+        $this->assertStringContainsString('"./renderers/tabulator.css"', $package);
+        $this->assertStringContainsString('"./themes/default.css"', $package);
         $this->assertStringContainsString('"./themes/bootstrap.css"', $package);
         $this->assertStringContainsString('--petak-row-height', $tokens);
         $this->assertStringContainsString('--petak-focus-color', $tokens);

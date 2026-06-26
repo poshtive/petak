@@ -1,5 +1,7 @@
 @layer petak.vendor, petak.structure, petak.theme;
 
+@import 'tabulator-tables/dist/css/tabulator.min.css' layer(petak.vendor);
+
 @layer petak.theme {
     .petak .tabulator {
         color: var(--petak-color);

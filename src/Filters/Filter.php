@@ -14,6 +14,20 @@ abstract class Filter
     /** @var list<string> */
     protected array $operators = [];
 
+    protected string $component = 'input';
+
+    protected string $inputType = 'text';
+
+    protected ?string $placeholder = null;
+
+    /** @var array<string, string> */
+    protected array $options = [];
+
+    protected bool $multiple = false;
+
+    /** @var list<string> */
+    protected array $dependsOn = [];
+
     final public function normalize(string $operator, mixed $value): mixed
     {
         if (! in_array($operator, $this->operators, true)) {
@@ -55,6 +69,8 @@ abstract class Filter
             'less_or_equal' => $query->where($field, '<=', $value),
             'between' => $query->whereBetween($field, $value),
             'not_between' => $query->whereNotBetween($field, $value),
+            'in' => $query->whereIn($field, (array) $value),
+            'not_in' => $query->whereNotIn($field, (array) $value),
             'is_empty' => $query->where(fn ($nested) => $nested->whereNull($field)->orWhere($field, '')),
             'is_not_empty' => $query->whereNotNull($field)->where($field, '!=', ''),
             default => throw new InvalidArgumentException("Operator [{$operator}] is not supported by this filter."),
@@ -79,6 +95,8 @@ abstract class Filter
             'less_or_equal' => $actual <= $expected,
             'between' => $actual >= $expected[0] && $actual <= $expected[1],
             'not_between' => $actual < $expected[0] || $actual > $expected[1],
+            'in' => in_array($actual, (array) $expected),
+            'not_in' => ! in_array($actual, (array) $expected),
             'is_empty' => $actual === null || $actual === '',
             'is_not_empty' => $actual !== null && $actual !== '',
             default => throw new InvalidArgumentException("Operator [{$operator}] is not supported by this filter."),
@@ -92,6 +110,12 @@ abstract class Filter
             'type' => static::type(),
             'operator' => $this->defaultOperator,
             'operators' => $this->operators,
+            'component' => $this->component,
+            'input_type' => $this->inputType,
+            'placeholder' => $this->placeholder,
+            'options' => $this->options,
+            'multiple' => $this->multiple,
+            'depends_on' => $this->dependsOn,
         ];
     }
 

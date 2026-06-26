@@ -23,6 +23,9 @@
         ".": "./resources/js/petak.js",
         "./petak.css": "./resources/css/petak.css",
         "./structural.css": "./resources/css/structural.css",
+        "./renderers/blade.css": "./resources/css/renderers/blade.css",
+        "./renderers/tabulator.css": "./resources/css/renderers/tabulator.css",
+        "./themes/default.css": "./resources/css/themes/default.css",
         "./themes/bootstrap.css": "./resources/css/themes/bootstrap.css"
     },
     "files": [

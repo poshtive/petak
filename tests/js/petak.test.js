@@ -416,6 +416,67 @@ describe('Petak transports and lifecycle', () => {
         expect(tables[0].options.paginationCounter(25, 1, 1, 1)).toBe('Showing 1 to 1 of 1 entry');
     });
 
+    it('maps filter metadata into Tabulator header controls', () => {
+        document.body.innerHTML = `
+            <div data-petak-grid data-petak-config="filter-ui-config">
+                <div data-petak-renderer></div>
+                <div data-petak-status></div>
+            </div>
+            <script id="filter-ui-config" type="application/json">
+                {
+                    "version":"1",
+                    "name":"filter-ui",
+                    "mode":"local",
+                    "columns":[
+                        {
+                            "key":"status",
+                            "label":"Status",
+                            "filter":{
+                                "type":"select",
+                                "component":"select",
+                                "operator":"equals",
+                                "options":{"draft":"Draft","paid":"Paid"}
+                            }
+                        },
+                        {
+                            "key":"score",
+                            "label":"Score",
+                            "filter":{
+                                "type":"number",
+                                "component":"input",
+                                "input_type":"number",
+                                "operator":"equals"
+                            }
+                        },
+                        {
+                            "key":"created_at",
+                            "label":"Created",
+                            "filter":{
+                                "type":"date",
+                                "component":"input",
+                                "input_type":"date",
+                                "operator":"equals"
+                            }
+                        }
+                    ],
+                    "initialResult":{"data":[]},
+                    "pagination":{"default_page_size":25,"page_sizes":[25]}
+                }
+            </script>
+        `;
+
+        createPetakGrid(document.querySelector('[data-petak-grid]'));
+
+        expect(tables[0].options.columns[0].headerFilter).toBe('list');
+        expect(tables[0].options.columns[0].headerFilterParams.values).toEqual({
+            '': '',
+            draft: 'Draft',
+            paid: 'Paid',
+        });
+        expect(tables[0].options.columns[1].headerFilterParams.elementAttributes.type).toBe('number');
+        expect(tables[0].options.columns[2].headerFilterParams.elementAttributes.type).toBe('date');
+    });
+
     it('wraps trusted html cell content so user markup keeps its own layout', () => {
         document.body.innerHTML = `
             <div data-petak-grid data-petak-config="html-config">

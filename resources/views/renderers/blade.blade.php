@@ -43,24 +43,13 @@
             <input type="hidden" name="{{ $stateKey }}[direction]" value="{{ $currentDirection }}">
         @endif
 
-        @if ($configuration['global_search'])
-            <div class="petak__toolbar">
-                <div class="petak__toolbar-primary">
-                    <label class="petak__search-label" for="{{ $definition->name }}-search">Search</label>
-                    <input
-                        id="{{ $definition->name }}-search"
-                        class="petak__search"
-                        name="{{ $stateKey }}[search]"
-                        type="search"
-                        value="{{ $state['search'] ?? '' }}"
-                        placeholder="Search..."
-                    >
-                </div>
-                <div class="petak__toolbar-actions">
-                    <button type="submit">Apply</button>
-                </div>
-            </div>
-        @endif
+        @include('petak::partials.toolbar', [
+            'configuration' => $configuration,
+            'blade' => true,
+            'searchId' => $definition->name.'-search',
+            'searchName' => $stateKey.'[search]',
+            'searchValue' => $state['search'] ?? '',
+        ])
 
         <div class="petak__renderer">
             <table class="petak__table">
@@ -68,6 +57,7 @@
                     <tr>
                         @foreach ($definition->columns as $column)
                             <th
+                                scope="col"
                                 data-align="{{ $column->toArray()['align'] }}"
                                 data-vertical-align="{{ $column->toArray()['vertical_align'] ?? $configuration['appearance']['vertical_align'] }}"
                                 @if ($column->toArray()['fit_content']) data-fit-content @endif
@@ -93,16 +83,11 @@
                                 @if ($column->toArray()['fit_content']) data-fit-content @endif
                             >
                                 @if ($column->filterDefinition())
-                                    <input
-                                        name="{{ $stateKey }}[filters][{{ $column->key() }}]"
-                                        value="{{ data_get($state, "filters.{$column->key()}", '') }}"
-                                        aria-label="Filter {{ $column->toArray()['label'] }}"
-                                    >
-                                    <input
-                                        type="hidden"
-                                        name="{{ $stateKey }}[operators][{{ $column->key() }}]"
-                                        value="{{ $column->filterDefinition()->defaultOperator() }}"
-                                    >
+                                    @include('petak::partials.filter-control', [
+                                        'column' => $column,
+                                        'state' => $state,
+                                        'stateKey' => $stateKey,
+                                    ])
                                 @endif
                             </th>
                         @endforeach

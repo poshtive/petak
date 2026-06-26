@@ -10,6 +10,13 @@ final class BooleanFilter extends Filter
 
     protected array $operators = ['equals', 'not_equals'];
 
+    protected string $component = 'select';
+
+    protected array $options = [
+        'true' => 'Yes',
+        'false' => 'No',
+    ];
+
     public static function make(): self
     {
         return new self;

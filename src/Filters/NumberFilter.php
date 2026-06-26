@@ -13,6 +13,8 @@ final class NumberFilter extends Filter
         'less_than', 'less_or_equal', 'between', 'not_between',
     ];
 
+    protected string $inputType = 'number';
+
     public static function make(): self
     {
         return new self;

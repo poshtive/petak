@@ -9,6 +9,7 @@ use Poshtive\Petak\Columns\ActionColumn;
 use Poshtive\Petak\Filters\BooleanFilter;
 use Poshtive\Petak\Filters\DateFilter;
 use Poshtive\Petak\Filters\NumberFilter;
+use Poshtive\Petak\Filters\SelectFilter;
 use Poshtive\Petak\Tests\TestCase;
 
 class ColumnTest extends TestCase
@@ -80,5 +81,18 @@ class ColumnTest extends TestCase
 
         $this->expectException(ValidationException::class);
         NumberFilter::make()->normalize('contains', 12);
+    }
+
+    public function test_filter_schema_exposes_renderer_metadata(): void
+    {
+        $filter = SelectFilter::make([
+            'draft' => 'Draft',
+            'paid' => 'Paid',
+        ])->toArray();
+
+        $this->assertSame('select', $filter['type']);
+        $this->assertSame('select', $filter['component']);
+        $this->assertSame(['draft' => 'Draft', 'paid' => 'Paid'], $filter['options']);
+        $this->assertFalse($filter['multiple']);
     }
 }

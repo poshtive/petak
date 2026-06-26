@@ -15,6 +15,8 @@ final class DateFilter extends Filter
         'less_than', 'less_or_equal', 'between', 'not_between',
     ];
 
+    protected string $inputType = 'date';
+
     public static function make(): self
     {
         return new self;

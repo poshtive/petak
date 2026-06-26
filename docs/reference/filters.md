@@ -48,6 +48,26 @@ Operators:
 - `between`
 - `not_between`
 
+## SelectFilter
+
+```php
+use Poshtive\Petak\Filters\SelectFilter;
+
+Column::make('status')
+    ->filter(SelectFilter::make([
+        'draft' => 'Draft',
+        'paid' => 'Paid',
+    ]));
+```
+
+Operators:
+
+- `equals`
+- `not_equals`
+
+Filter schema includes renderer metadata such as `component`, `input_type`,
+`options`, `multiple`, and `depends_on`.
+
 ## Custom Filter Callbacks
 
 Filters own their value normalization and their default database/local matching
