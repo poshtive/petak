@@ -32,10 +32,9 @@ import {
     destroyDisconnectedPetak,
     initializePetak,
     livewireTransport,
-    loadPetakViews,
     localTransport,
     refreshPetak,
-    savePetakView,
+    stateStorage,
     structurePetakPaginator,
 } from '../../resources/js/petak.js';
 
@@ -153,7 +152,7 @@ describe('Petak transports and lifecycle', () => {
                     "name":"preloaded",
                     "mode":"remote",
                     "endpoint":"/users/data",
-                    "columns":[{"key":"email","label":"Email","responsive_priority":2}],
+                    "columns":[{"key":"email","label":"Email","responsive_priority":2,"pin":"right"}],
                     "initialResult":{
                         "data":[{"email":"ada@example.com"}],
                         "meta":{"pagination":{"last_page":3,"total":51}}
@@ -177,9 +176,11 @@ describe('Petak transports and lifecycle', () => {
         expect(tables[0].options.responsiveLayout).toBe('collapse');
         expect(tables[0].options.responsiveLayoutCollapseStartOpen).toBe(false);
         expect(tables[0].options.columns[0].responsive).toBe(2);
+        expect(tables[0].options.columns[0].frozen).toBe(true);
+        expect(tables[0].options.columns[0].frozenPosition).toBe('right');
     });
 
-    it('versions and restores saved views from local storage', () => {
+    it('versions and restores state from local storage', () => {
         const config = {
             state: {
                 key: 'users',
@@ -188,16 +189,14 @@ describe('Petak transports and lifecycle', () => {
             },
         };
 
-        savePetakView(config, 'Active users', {
+        stateStorage(config).save({
             filters: [{ field: 'active', value: true }],
         });
 
-        expect(loadPetakViews(config)).toEqual({
-            'Active users': {
-                filters: [{ field: 'active', value: true }],
-            },
+        expect(stateStorage(config).load()).toEqual({
+            filters: [{ field: 'active', value: true }],
         });
-        expect(window.localStorage.getItem('petak:users:v2:views')).toBeNull();
+        expect(window.localStorage.getItem('petak:users:v2')).toBeNull();
     });
 
     it('does not persist table state before Tabulator is built', () => {

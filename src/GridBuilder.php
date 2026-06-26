@@ -82,9 +82,9 @@ final class GridBuilder
         private readonly SourceFactory $sourceFactory,
         private readonly GridEngine $engine,
     ) {
-        $this->defaultPageSize = (int) config('petak.default_page_size', 25);
-        $this->maxPageSize = (int) config('petak.max_page_size', 250);
-        $this->pageSizes = (array) config('petak.page_sizes', [10, 25, 50, 100]);
+        $this->defaultPageSize = (int) config('petak.default_page_size', config('petak.pagination.default_page_size', 25));
+        $this->maxPageSize = (int) config('petak.max_page_size', config('petak.pagination.max_page_size', 250));
+        $this->pageSizes = (array) config('petak.page_sizes', config('petak.pagination.page_sizes', [10, 25, 50, 100]));
         $this->density = (string) config('petak.appearance.density', 'comfortable');
         $this->striped = (bool) config('petak.appearance.striped', false);
         $this->bordered = (bool) config('petak.appearance.bordered', true);
@@ -419,7 +419,7 @@ final class GridBuilder
         $definition = $this->definition();
         $configuration = $definition->schema() + [
             'endpoint' => $endpoint ?? url()->current(),
-            'renderer' => config('petak.default_renderer', 'tabulator'),
+            'renderer' => config('petak.default_renderer', config('petak.renderer', 'tabulator')),
             'global_search' => $this->globalSearch,
             'state' => $this->state?->toArray(),
             'bulk_actions' => array_values(array_map(
@@ -439,7 +439,7 @@ final class GridBuilder
         ];
 
         if ($definition->mode === GridMode::Local || $definition->preload) {
-            $maxLocalRows = (int) config('petak.max_local_rows', 1000);
+            $maxLocalRows = (int) config('petak.max_local_rows', config('petak.limits.max_local_rows', 1000));
             $request = new GridRequest(
                 page: 1,
                 pageSize: $definition->mode === GridMode::Local

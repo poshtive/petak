@@ -66,6 +66,8 @@ function tabulatorColumns(config, persistedState = null) {
             headerHozAlign: alignment,
             vertAlign: column.vertical_align ?? config.appearance?.vertical_align ?? 'middle',
             responsive: column.responsive_priority,
+            frozen: Boolean(column.pin),
+            frozenPosition: column.pin ?? undefined,
             ...tabulatorFilter(column),
         };
 

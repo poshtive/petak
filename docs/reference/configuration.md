@@ -10,15 +10,18 @@ Default values:
 
 ```php
 return [
-    'protocol_version' => '1',
-    'default_page_size' => 25,
-    'page_sizes' => [10, 25, 50, 100],
-    'max_page_size' => 250,
-    'max_local_rows' => 1000,
-    'max_filters' => 20,
-    'max_filter_depth' => 3,
-    'max_search_length' => 100,
-    'default_renderer' => 'tabulator',
+    'renderer' => 'tabulator',
+    'pagination' => [
+        'default_page_size' => 25,
+        'page_sizes' => [10, 25, 50, 100],
+        'max_page_size' => 250,
+    ],
+    'limits' => [
+        'max_local_rows' => 1000,
+        'max_filters' => 20,
+        'max_filter_depth' => 3,
+        'max_search_length' => 100,
+    ],
     'preload' => false,
     'responsive' => [
         'layout' => null,
@@ -41,8 +44,8 @@ a specific grid into dark mode.
 
 ## Local Row Limit
 
-`max_local_rows` caps initial local-mode payload size. Use remote grids for
-database-backed application data.
+`limits.max_local_rows` caps initial local-mode payload size. Use remote grids
+for database-backed application data.
 
 ## Preload
 
@@ -58,4 +61,4 @@ responsive row area when the table narrows.
 
 ## Search Length
 
-`max_search_length` caps global search input sent to the server.
+`limits.max_search_length` caps global search input sent to the server.

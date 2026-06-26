@@ -7,8 +7,7 @@ import {
     initializePetak,
     refreshPetak,
     destroyDisconnectedPetak,
-    savePetakView,
-    loadPetakViews,
+    stateStorage,
 } from '@poshtive/petak';
 ```
 
@@ -29,12 +28,11 @@ refreshPetak();
 
 Refresh one remote grid by name, or every active remote grid.
 
-## Saved Views
+## stateStorage
 
 ```js
-savePetakView(config, 'Active users', state);
-const views = loadPetakViews(config);
+const storage = stateStorage(config);
+const state = storage?.load();
 ```
 
-Views are stored with the grid state key and version.
-
+Returns a local-storage backed state adapter when the grid has state enabled.

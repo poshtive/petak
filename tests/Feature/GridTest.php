@@ -852,7 +852,7 @@ class GridTest extends TestCase
 
         $this->assertSame('uuid', $configuration['row_key']);
 
-        config()->set('petak.max_local_rows', 1);
+        config()->set('petak.limits.max_local_rows', 1);
 
         $this->expectException(\LengthException::class);
 

@@ -50,6 +50,16 @@ class ColumnTest extends TestCase
         Column::make('name')->verticalAlign('center');
     }
 
+    public function test_column_can_be_pinned(): void
+    {
+        $this->assertNull(Column::make('name')->toArray()['pin']);
+        $this->assertSame('left', Column::make('id')->pin()->toArray()['pin']);
+        $this->assertSame('right', Column::make('actions')->pin('right')->toArray()['pin']);
+
+        $this->expectException(\InvalidArgumentException::class);
+        Column::make('name')->pin('center');
+    }
+
     public function test_export_fallback_uses_raw_value_without_display_html(): void
     {
         $column = Column::make('status')

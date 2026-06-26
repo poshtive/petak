@@ -51,7 +51,7 @@ Petak::grid()
 ```
 
 Array and collection grids are local grids. They are best for small in-memory
-datasets and are capped by `petak.max_local_rows`.
+datasets and are capped by `petak.limits.max_local_rows`.
 
 ## Custom Data Sources
 

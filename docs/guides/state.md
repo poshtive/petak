@@ -1,4 +1,4 @@
-# State and Saved Views
+# State Persistence
 
 Enable state persistence with `GridState`:
 
@@ -21,14 +21,4 @@ The Tabulator adapter persists:
 - column order
 - column visibility
 
-Saved views use the same versioned storage key:
-
-```js
-import { savePetakView, loadPetakViews } from '@poshtive/petak';
-
-savePetakView(config, 'Active users', state);
-const views = loadPetakViews(config);
-```
-
 Increment the state version after changing column keys or filter behavior.
-

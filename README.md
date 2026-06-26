@@ -113,7 +113,7 @@ document.dispatchEvent(new CustomEvent('petak:refresh', {
 
 Omit `grid` to refresh every active Petak grid.
 
-## State and saved views
+## State persistence
 
 ```php
 use Poshtive\Petak\State\GridState;
@@ -126,8 +126,7 @@ $grid->state(
 ```
 
 The Tabulator adapter persists page size, sort, filters, search, column order,
-and column visibility. Saved views use the same versioned storage key through
-`savePetakView()` and `loadPetakViews()`.
+and column visibility.
 
 ## Bulk actions, export, and inline editing
 
@@ -182,8 +181,8 @@ GET. Nested filter groups are available through canonical filter nodes
 containing `boolean` plus `filters`.
 
 Local array and collection grids are intended for small datasets. The initial
-browser payload is capped by `petak.max_local_rows` and larger datasets should
-use remote mode.
+browser payload is capped by `petak.limits.max_local_rows` and larger datasets
+should use remote mode.
 
 ## Styling
 

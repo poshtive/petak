@@ -70,7 +70,7 @@ final readonly class GridRequest
         }
 
         $rawFilters = (array) ($payload['filters'] ?? []);
-        if (count($rawFilters, COUNT_RECURSIVE) > (int) config('petak.max_filters', 20) * 5) {
+        if (count($rawFilters, COUNT_RECURSIVE) > (int) config('petak.max_filters', config('petak.limits.max_filters', 20)) * 5) {
             throw ValidationException::withMessages(['filters' => 'Too many filters.']);
         }
 
@@ -92,7 +92,7 @@ final readonly class GridRequest
         GridDefinition $definition,
         int $depth = 1,
     ): array {
-        if ($depth > (int) config('petak.max_filter_depth', 3)) {
+        if ($depth > (int) config('petak.max_filter_depth', config('petak.limits.max_filter_depth', 3))) {
             throw ValidationException::withMessages(['filters' => 'Filter group depth exceeded.']);
         }
 
@@ -143,7 +143,7 @@ final readonly class GridRequest
         }
 
         $search = (string) $search;
-        $maxLength = (int) config('petak.max_search_length', 100);
+        $maxLength = (int) config('petak.max_search_length', config('petak.limits.max_search_length', 100));
 
         if ($maxLength > 0 && mb_strlen($search) > $maxLength) {
             throw ValidationException::withMessages([

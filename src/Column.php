@@ -54,6 +54,8 @@ class Column
 
     private bool $fitContent = false;
 
+    private ?string $pin = null;
+
     public function __construct(private readonly string $key)
     {
         $this->label = Str::of($key)->afterLast('.')->replace('_', ' ')->headline()->toString();
@@ -219,6 +221,17 @@ class Column
         return $this;
     }
 
+    public function pin(string $side = 'left'): static
+    {
+        if (! in_array($side, ['left', 'right'], true)) {
+            throw new \InvalidArgumentException('Column pin side must be left or right.');
+        }
+
+        $this->pin = $side;
+
+        return $this;
+    }
+
     public function trustedHtml(bool $enabled = true): static
     {
         $this->trustedHtml = $enabled;
@@ -374,6 +387,7 @@ class Column
             'vertical_align' => $this->verticalAlign,
             'responsive_priority' => $this->responsivePriority,
             'fit_content' => $this->fitContent,
+            'pin' => $this->pin,
             'filter' => $this->filter?->toArray(),
         ];
     }

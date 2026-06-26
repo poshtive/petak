@@ -1,6 +1,6 @@
 export { executePetakAction } from './core/actions.js';
 export { canonicalRequest } from './core/request.js';
-export { loadPetakViews, savePetakView, stateStorage } from './core/state.js';
+export { stateStorage } from './core/state.js';
 export { destroyDisconnectedPetak, initializePetak, refreshPetak } from './dom/lifecycle.js';
 export { structurePetakPaginator } from './dom/paginator.js';
 export { createPetakGrid } from './renderers/tabulator.js';

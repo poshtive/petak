@@ -53,5 +53,4 @@ $grid
     ]);
 ```
 
-Search length is capped by `petak.max_search_length`.
-
+Search length is capped by `petak.limits.max_search_length`.

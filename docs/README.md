@@ -20,7 +20,7 @@ once, then render it with Tabulator, Blade, or Livewire transport.
 - [Authorization](guides/authorization.md)
 - [Export](guides/export.md)
 - [Multiple Grids](guides/multiple-grids.md)
-- [State and Saved Views](guides/state.md)
+- [State Persistence](guides/state.md)
 - [Blade Renderer](guides/blade-renderer.md)
 - [Livewire Transport](guides/livewire.md)
 - [Styling and Themes](guides/styling.md)

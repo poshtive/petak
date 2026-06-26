@@ -58,6 +58,7 @@ align(string $align): static
 verticalAlign(?string $align): static
 responsivePriority(int $priority): static
 fitContent(bool $enabled = true): static
+pin(string $side = 'left'): static
 trustedHtml(bool $enabled = true): static
 ```
 
@@ -65,3 +66,4 @@ Alignment values: `start`, `center`, `end`.
 
 Vertical alignment values: `top`, `middle`, `bottom`.
 
+Pin side values: `left`, `right`.
