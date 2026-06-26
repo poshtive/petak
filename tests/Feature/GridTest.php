@@ -2,8 +2,10 @@
 
 namespace Poshtive\Petak\Tests\Feature;
 
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +22,7 @@ use Poshtive\Petak\Enums\SortDirection;
 use Poshtive\Petak\Exports\CsvExport;
 use Poshtive\Petak\Exports\XlsxExport;
 use Poshtive\Petak\Facades\Petak;
+use Poshtive\Petak\Filters\Filter;
 use Poshtive\Petak\Filters\TextFilter;
 use Poshtive\Petak\Grid;
 use Poshtive\Petak\GridBuilder;
@@ -476,6 +479,37 @@ class GridTest extends TestCase
         );
     }
 
+    public function test_custom_filter_objects_apply_to_database_and_collection_sources(): void
+    {
+        $rows = DB::table('petak_items')->orderBy('id')->get()->map(
+            fn (object $row) => (array) $row,
+        )->all();
+        $columns = fn () => [
+            Column::make('name'),
+            Column::make('score')->filter(new PetakDivisibleByFilter),
+        ];
+        $payload = [
+            'version' => '1',
+            'page' => ['number' => 1, 'size' => 25],
+            'sort' => [],
+            'filters' => [[
+                'field' => 'score',
+                'operator' => 'divisible_by',
+                'value' => '20',
+            ]],
+        ];
+
+        $databaseResult = Petak::for(DB::table('petak_items'))
+            ->columns($columns())
+            ->execute($payload);
+        $arrayResult = Petak::for($rows)
+            ->columns($columns())
+            ->execute($payload);
+
+        $this->assertSame(['Charlie'], array_column($databaseResult->data, 'name'));
+        $this->assertSame($databaseResult->data, $arrayResult->data);
+    }
+
     public function test_livewire_concern_executes_named_component_grid(): void
     {
         $component = new class
@@ -689,5 +723,36 @@ class PetakInjectedGrid extends Grid
             ->source($this->source->rows)
             ->name('injected-items')
             ->columns(['id', 'name']);
+    }
+}
+
+class PetakDivisibleByFilter extends Filter
+{
+    protected string $defaultOperator = 'divisible_by';
+
+    protected array $operators = ['divisible_by'];
+
+    public static function type(): string
+    {
+        return 'divisible-by';
+    }
+
+    public function applyDatabase(
+        EloquentBuilder|QueryBuilder $query,
+        string $field,
+        string $operator,
+        mixed $value,
+    ): void {
+        $query->whereRaw("{$field} % ? = 0", [$value]);
+    }
+
+    public function matches(mixed $actual, string $operator, mixed $expected): bool
+    {
+        return (int) $expected !== 0 && (int) $actual % (int) $expected === 0;
+    }
+
+    protected function normalizeValue(string $operator, mixed $value): int
+    {
+        return (int) $value;
     }
 }

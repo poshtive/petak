@@ -50,6 +50,50 @@ Operators:
 
 ## Custom Filter Callbacks
 
+Filters own their value normalization and their default database/local matching
+behavior. Use a custom filter class when a new operator should work across
+remote and local sources:
+
+```php
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Poshtive\Petak\Filters\Filter;
+
+final class DivisibleByFilter extends Filter
+{
+    protected string $defaultOperator = 'divisible_by';
+
+    protected array $operators = ['divisible_by'];
+
+    public static function type(): string
+    {
+        return 'divisible-by';
+    }
+
+    public function applyDatabase(
+        EloquentBuilder|QueryBuilder $query,
+        string $field,
+        string $operator,
+        mixed $value,
+    ): void {
+        $query->whereRaw("{$field} % ? = 0", [$value]);
+    }
+
+    public function matches(mixed $actual, string $operator, mixed $expected): bool
+    {
+        return (int) $expected !== 0 && (int) $actual % (int) $expected === 0;
+    }
+
+    protected function normalizeValue(string $operator, mixed $value): int
+    {
+        return (int) $value;
+    }
+}
+```
+
+Use `filterUsing()` for one-off database query overrides, such as relation
+filters:
+
 ```php
 Column::make('team')
     ->filter(TextFilter::make())
@@ -57,4 +101,3 @@ Column::make('team')
         $query->whereHas('team', fn ($team) => $team->where('name', 'like', "%{$value}%"));
     });
 ```
-

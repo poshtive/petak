@@ -87,30 +87,6 @@ abstract class DatabaseSource implements DataSource
         return $query;
     }
 
-    private function applyFilter(
-        EloquentBuilder|QueryBuilder $query,
-        string $field,
-        string $operator,
-        mixed $value,
-    ): void {
-        match ($operator) {
-            'contains' => $this->applyLike($query, $field, 'like', '%'.$this->escapeLike($value).'%'),
-            'not_contains' => $this->applyLike($query, $field, 'not like', '%'.$this->escapeLike($value).'%'),
-            'starts_with' => $this->applyLike($query, $field, 'like', $this->escapeLike($value).'%'),
-            'ends_with' => $this->applyLike($query, $field, 'like', '%'.$this->escapeLike($value)),
-            'equals' => $query->where($field, '=', $value),
-            'not_equals' => $query->where($field, '!=', $value),
-            'greater_than' => $query->where($field, '>', $value),
-            'greater_or_equal' => $query->where($field, '>=', $value),
-            'less_than' => $query->where($field, '<', $value),
-            'less_or_equal' => $query->where($field, '<=', $value),
-            'between' => $query->whereBetween($field, $value),
-            'not_between' => $query->whereNotBetween($field, $value),
-            'is_empty' => $query->where(fn ($nested) => $nested->whereNull($field)->orWhere($field, '')),
-            'is_not_empty' => $query->whereNotNull($field)->where($field, '!=', ''),
-        };
-    }
-
     private function applyFilterNodes(
         EloquentBuilder|QueryBuilder $query,
         GridDefinition $definition,
@@ -135,12 +111,13 @@ abstract class DatabaseSource implements DataSource
 
             $column = $definition->column($item['field']);
             $resolver = $column->filterResolver();
+            $filter = $column->filterDefinition();
 
-            $query->{$method}(function ($nested) use ($resolver, $column, $item): void {
+            $query->{$method}(function ($nested) use ($resolver, $column, $filter, $item): void {
                 if ($resolver !== null) {
                     $resolver($nested, $item['operator'], $item['value']);
                 } else {
-                    $this->applyFilter(
+                    $filter->applyDatabase(
                         $nested,
                         $column->filterField(),
                         $item['operator'],

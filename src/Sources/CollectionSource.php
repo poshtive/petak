@@ -87,29 +87,6 @@ class CollectionSource implements DataSource
         return $rows;
     }
 
-    private function matches(mixed $actual, string $operator, mixed $expected): bool
-    {
-        $actualString = mb_strtolower((string) $actual);
-        $expectedString = mb_strtolower((string) $expected);
-
-        return match ($operator) {
-            'contains' => str_contains($actualString, $expectedString),
-            'not_contains' => ! str_contains($actualString, $expectedString),
-            'starts_with' => str_starts_with($actualString, $expectedString),
-            'ends_with' => str_ends_with($actualString, $expectedString),
-            'equals' => $actual == $expected,
-            'not_equals' => $actual != $expected,
-            'greater_than' => $actual > $expected,
-            'greater_or_equal' => $actual >= $expected,
-            'less_than' => $actual < $expected,
-            'less_or_equal' => $actual <= $expected,
-            'between' => $actual >= $expected[0] && $actual <= $expected[1],
-            'not_between' => $actual < $expected[0] || $actual > $expected[1],
-            'is_empty' => $actual === null || $actual === '',
-            'is_not_empty' => $actual !== null && $actual !== '',
-        };
-    }
-
     private function matchesNodes(mixed $row, GridDefinition $definition, array $nodes): bool
     {
         foreach ($nodes as $item) {
@@ -129,9 +106,11 @@ class CollectionSource implements DataSource
                 continue;
             }
 
-            $path = $definition->column($item['field'])->valuePath();
+            $column = $definition->column($item['field']);
+            $path = $column->valuePath();
+            $filter = $column->filterDefinition();
 
-            if (! $this->matches(data_get($row, $path), $item['operator'], $item['value'])) {
+            if (! $filter->matches(data_get($row, $path), $item['operator'], $item['value'])) {
                 return false;
             }
         }
