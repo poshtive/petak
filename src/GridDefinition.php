@@ -27,6 +27,7 @@ final readonly class GridDefinition
         public string $rowKey = 'id',
         public bool $preload = false,
         public array $responsive = [],
+        public array $rendererOptions = [],
     ) {}
 
     public function column(string $key): ?Column
@@ -56,6 +57,7 @@ final readonly class GridDefinition
             'class_name' => $this->className,
             'preload' => $this->preload,
             'responsive' => $this->responsive,
+            'renderer_options' => $this->rendererOptions,
         ];
     }
 }

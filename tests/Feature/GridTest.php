@@ -700,6 +700,7 @@ class GridTest extends TestCase
         config()->set('petak.preload', true);
         config()->set('petak.responsive.layout', 'hide');
         config()->set('petak.responsive.collapse_start_open', true);
+        config()->set('petak.renderer_options.tabulator.layout', 'fitDataFill');
 
         $configuration = Petak::for(DB::table('petak_items'))
             ->name('configured-preload')
@@ -709,7 +710,20 @@ class GridTest extends TestCase
         $this->assertTrue($configuration['preload']);
         $this->assertSame('hide', $configuration['responsive']['layout']);
         $this->assertTrue($configuration['responsive']['collapse_start_open']);
+        $this->assertSame('fitDataFill', $configuration['renderer_options']['tabulator']['layout']);
         $this->assertArrayHasKey('initialResult', $configuration);
+    }
+
+    public function test_invalid_tabulator_layout_config_falls_back_to_fit_columns(): void
+    {
+        config()->set('petak.renderer_options.tabulator.layout', 'fitDataTable');
+
+        $configuration = Petak::for(DB::table('petak_items'))
+            ->name('configured-tabulator')
+            ->columns(['id'])
+            ->configuration('/petak/items/data');
+
+        $this->assertSame('fitColumns', $configuration['renderer_options']['tabulator']['layout']);
     }
 
     public function test_bulk_edit_and_csv_export_actions_use_registered_server_callbacks(): void

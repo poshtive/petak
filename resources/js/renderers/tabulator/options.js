@@ -1,5 +1,13 @@
 import { tabulatorColumns } from './columns.js';
 
+const TABULATOR_LAYOUTS = new Set(['fitColumns', 'fitData', 'fitDataFill', 'fitDataStretch']);
+
+function tabulatorLayout(config) {
+    const layout = config.renderer_options?.tabulator?.layout;
+
+    return TABULATOR_LAYOUTS.has(layout) ? layout : 'fitColumns';
+}
+
 function paginationCounter(pageSize, currentRow, _currentPage, totalRows) {
     const from = totalRows > 0 ? currentRow : 0;
     const to = totalRows > 0 ? Math.min(currentRow + pageSize - 1, totalRows) : 0;
@@ -17,7 +25,7 @@ export function buildTabulatorOptions({ config, persistedState, remote, rowKey, 
             widthGrow: 1,
             widthShrink: 1,
         },
-        layout: 'fitColumns',
+        layout: tabulatorLayout(config),
         placeholder: 'No entries found.',
         pagination: true,
         paginationMode: remote ? 'remote' : 'local',

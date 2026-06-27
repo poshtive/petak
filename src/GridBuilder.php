@@ -68,6 +68,9 @@ final class GridBuilder
 
     private bool $responsiveCollapseStartOpen;
 
+    /** @var array<string, mixed> */
+    private array $rendererOptions = [];
+
     private ?GridState $state = null;
 
     /** @var array<string, BulkAction> */
@@ -92,6 +95,7 @@ final class GridBuilder
         $this->preload((bool) config('petak.preload', false));
         $this->responsiveLayout(config('petak.responsive.layout'));
         $this->responsiveCollapseStartOpen = (bool) config('petak.responsive.collapse_start_open', false);
+        $this->rendererOptions = $this->configuredRendererOptions();
         $this->verticalAlign((string) config('petak.appearance.vertical_align', 'middle'));
     }
 
@@ -355,7 +359,24 @@ final class GridBuilder
                 'layout' => $this->responsiveLayout,
                 'collapse_start_open' => $this->responsiveCollapseStartOpen,
             ],
+            rendererOptions: $this->rendererOptions,
         );
+    }
+
+    /** @return array<string, mixed> */
+    private function configuredRendererOptions(): array
+    {
+        $tabulatorLayout = config('petak.renderer_options.tabulator.layout', 'fitColumns');
+
+        if (! in_array($tabulatorLayout, ['fitColumns', 'fitData', 'fitDataFill', 'fitDataStretch'], true)) {
+            $tabulatorLayout = 'fitColumns';
+        }
+
+        return [
+            'tabulator' => [
+                'layout' => $tabulatorLayout,
+            ],
+        ];
     }
 
     public function matches(Request $request): bool

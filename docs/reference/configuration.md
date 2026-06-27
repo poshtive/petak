@@ -27,6 +27,11 @@ return [
         'layout' => null,
         'collapse_start_open' => false,
     ],
+    'renderer_options' => [
+        'tabulator' => [
+            'layout' => 'fitColumns',
+        ],
+    ],
     'appearance' => [
         'density' => 'comfortable',
         'striped' => false,
@@ -58,6 +63,16 @@ when the extra server-side query during page rendering is acceptable.
 `responsive.layout` accepts `null`, `hide`, or `collapse`. Use `collapse` to
 move columns with larger `responsivePriority()` values into Tabulator's
 responsive row area when the table narrows.
+
+## Tabulator Layout
+
+`renderer_options.tabulator.layout` controls Tabulator's global column layout
+policy. Accepted values are `fitColumns`, `fitData`, `fitDataFill`, and
+`fitDataStretch`. Invalid values fall back to `fitColumns`.
+
+Use `fitColumns` when the grid should fill its container. Use `fitDataFill`
+when content width should have more influence and horizontal overflow is
+preferable to aggressive column shrinking.
 
 ## Search Length
 

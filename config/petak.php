@@ -76,6 +76,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Renderer Options
+    |--------------------------------------------------------------------------
+    |
+    | Renderer-specific options are intentionally limited to global config so
+    | the fluent grid API stays renderer-agnostic.
+    |
+    | Tabulator layout values: "fitColumns", "fitData", "fitDataFill", or
+    | "fitDataStretch". Invalid values fall back to "fitColumns".
+    |
+    */
+
+    'renderer_options' => [
+        'tabulator' => [
+            'layout' => 'fitColumns',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Appearance
     |--------------------------------------------------------------------------
     |
