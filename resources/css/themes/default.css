@@ -15,8 +15,8 @@
     .petak :where(input, select, button) {
         min-height: var(--petak-control-height);
         color: var(--petak-color);
-        background: var(--petak-surface-raised);
-        border: var(--petak-border-width) solid var(--petak-border-color);
+        background: var(--petak-control-surface);
+        border: var(--petak-border-width) solid var(--petak-control-border);
         border-radius: var(--petak-radius);
         transition:
             color var(--petak-transition-duration),
@@ -26,6 +26,10 @@
 
     .petak :where(input, select) {
         padding-inline: .625rem;
+    }
+
+    .petak :where(input, select, button):where(:hover, :focus-visible) {
+        border-color: var(--petak-control-border-hover);
     }
 
     .petak :where(button) {
@@ -48,7 +52,7 @@
     .petak__columns-menu {
         color: var(--petak-color);
         background: var(--petak-surface-raised);
-        border: var(--petak-border-width) solid var(--petak-border-color);
+        border: var(--petak-border-width) solid var(--petak-control-border);
         border-radius: var(--petak-radius);
         box-shadow: 0 .5rem 1.25rem color-mix(in srgb, var(--petak-color) 12%, transparent);
     }
@@ -56,7 +60,7 @@
     .petak__columns-heading {
         color: var(--petak-muted-color);
         background: var(--petak-footer-surface);
-        border-block-end: var(--petak-border-width) solid var(--petak-border-color);
+        border-block-end: var(--petak-border-width) solid var(--petak-row-divider);
     }
 
     .petak__columns-list label:hover {

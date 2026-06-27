@@ -10,15 +10,28 @@
         --petak-surface-raised: var(--bs-body-bg, #fff);
         --petak-surface-hover: var(--bs-tertiary-bg, #f8f9fa);
         --petak-surface-selected: var(--bs-secondary-bg, #e9ecef);
-        --petak-header-surface: var(--bs-secondary-bg, #e9ecef);
+        --petak-header-surface: #f2f2f2;
         --petak-header-color: var(--bs-emphasis-color, #212529);
-        --petak-filter-surface: var(--bs-tertiary-bg, #f8f9fa);
-        --petak-footer-surface: var(--bs-tertiary-bg, #f8f9fa);
+        --petak-filter-surface: var(--bs-body-bg, #fff);
+        --petak-footer-surface: #f5f5f5;
         --petak-border-color: var(--bs-border-color, #dee2e6);
         --petak-row-divider: color-mix(
             in srgb,
             var(--bs-border-color, #dee2e6) 68%,
             transparent
+        );
+        --petak-column-divider: color-mix(
+            in srgb,
+            var(--bs-border-color, #dee2e6) 52%,
+            transparent
+        );
+        --petak-frozen-divider: var(--petak-border-color);
+        --petak-control-surface: var(--bs-body-bg, #fff);
+        --petak-control-border: var(--bs-border-color, #dee2e6);
+        --petak-control-border-hover: color-mix(
+            in srgb,
+            var(--bs-border-color, #dee2e6) 72%,
+            var(--bs-emphasis-color, #212529)
         );
         --petak-accent: var(--bs-secondary-color, #6c757d);
         --petak-accent-contrast: var(--bs-body-bg, #fff);
@@ -33,6 +46,29 @@
 
     [data-bs-theme="dark"] .petak {
         color-scheme: dark;
+        --petak-surface: var(--bs-body-bg, #212529);
+        --petak-surface-raised: var(--bs-body-bg, #212529);
+        --petak-surface-hover: var(--bs-tertiary-bg, #2b3035);
+        --petak-surface-selected: var(--bs-secondary-bg, #343a40);
+        --petak-row-active-surface: #1e3a5f;
+        --petak-row-active-border: #60a5fa;
+        --petak-header-surface: var(--bs-tertiary-bg, #2b3035);
+        --petak-header-color: var(--bs-emphasis-color, #f8f9fa);
+        --petak-filter-surface: var(--bs-body-bg, #212529);
+        --petak-footer-surface: var(--bs-tertiary-bg, #2b3035);
+        --petak-column-divider: color-mix(
+            in srgb,
+            var(--bs-border-color, #495057) 64%,
+            transparent
+        );
+        --petak-frozen-divider: var(--petak-border-color);
+        --petak-control-surface: var(--bs-body-bg, #212529);
+        --petak-control-border: var(--bs-border-color, #495057);
+        --petak-control-border-hover: color-mix(
+            in srgb,
+            var(--bs-border-color, #495057) 68%,
+            var(--bs-emphasis-color, #f8f9fa)
+        );
     }
 
     .petak :where(button, input, select) {

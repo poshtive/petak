@@ -8,13 +8,40 @@
     $currentDirection = $state['direction'] ?? 'asc';
     $url = function (array $changes) use ($definition, $state): string {
         $query = request()->query();
-        data_set(
-            $query,
-            "petak_state.{$definition->name}",
-            array_replace($state, $changes),
-        );
+        $nextState = array_replace($state, $changes);
+
+        foreach ($nextState as $key => $value) {
+            if ($value === null || $value === '') {
+                unset($nextState[$key]);
+            }
+        }
+
+        data_set($query, "petak_state.{$definition->name}", $nextState);
 
         return url()->current().'?'.http_build_query($query);
+    };
+    $sortUrl = function ($column) use ($currentDirection, $currentSort, $url): string {
+        if ($currentSort !== $column->key()) {
+            return $url([
+                'page' => 1,
+                'sort' => $column->key(),
+                'direction' => 'asc',
+            ]);
+        }
+
+        if ($currentDirection === 'asc') {
+            return $url([
+                'page' => 1,
+                'sort' => $column->key(),
+                'direction' => 'desc',
+            ]);
+        }
+
+        return $url([
+            'page' => 1,
+            'sort' => null,
+            'direction' => null,
+        ]);
     };
     $sizingAttributes = function ($column): array {
         $sizing = $column->toArray()['sizing'];
@@ -86,11 +113,7 @@
                                 @if ($sizing['style']) style="{{ $sizing['style'] }}" @endif
                             >
                                 @if ($column->isSortable())
-                                    <a href="{{ $url([
-                                        'page' => 1,
-                                        'sort' => $column->key(),
-                                        'direction' => $currentSort === $column->key() && $currentDirection === 'asc' ? 'desc' : 'asc',
-                                    ]) }}">
+                                    <a href="{{ $sortUrl($column) }}">
                                         {{ $column->toArray()['label'] }}
                                     </a>
                                 @else

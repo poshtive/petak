@@ -132,6 +132,7 @@ export function tabulatorColumns(config, persistedState = null) {
             title: column.label,
             field: column.key,
             headerSort: Boolean(column.sortable),
+            headerSortTristate: column.sortable ? true : undefined,
             visible: persistedState?.columns?.visibility?.[column.key] ?? column.visible,
             editor: column.editable ? 'input' : false,
             hozAlign: horizontalAlignment,

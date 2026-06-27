@@ -23,7 +23,7 @@
         color: var(--petak-header-color);
         background: var(--petak-header-surface);
         border: 0;
-        border-block-end: var(--petak-border-width) solid var(--petak-border-color);
+        border-block-end: var(--petak-border-width) solid var(--petak-row-divider);
     }
 
     .petak .tabulator .tabulator-header .tabulator-col,
@@ -33,9 +33,9 @@
         border: 0;
     }
 
-    .petak--bordered .tabulator .tabulator-header .tabulator-col ~ .tabulator-col,
-    .petak--bordered .tabulator .tabulator-header .tabulator-col-row-handle ~ .tabulator-col {
-        border-inline-start: var(--petak-border-width) solid var(--petak-border-color);
+    .petak--bordered .tabulator .tabulator-header .tabulator-col,
+    .petak--bordered .tabulator .tabulator-header .tabulator-col-row-handle {
+        border-inline-end: var(--petak-border-width) solid var(--petak-column-divider);
     }
 
     .petak .tabulator .tabulator-header .tabulator-col .tabulator-col-content {
@@ -57,8 +57,9 @@
     .petak .tabulator .tabulator-header .tabulator-header-filter :is(input:not([type="checkbox"]), select) {
         width: 100%;
         color: var(--petak-color);
-        background: var(--petak-surface-raised);
-        border-color: color-mix(in srgb, var(--petak-header-color) 32%, transparent);
+        min-height: var(--petak-control-height);
+        background: var(--petak-control-surface);
+        border-color: var(--petak-control-border);
         font-size: var(--petak-font-size-sm);
         font-weight: 400;
         letter-spacing: normal;
@@ -102,7 +103,7 @@
 
     .petak .tabulator-row.tabulator-selected {
         position: relative;
-        background: var(--petak-surface-selected);
+        background: var(--petak-row-active-surface);
     }
 
     .petak .tabulator-row.tabulator-selected::before {
@@ -111,7 +112,7 @@
         inset-inline-start: 0;
         z-index: 1;
         width: 3px;
-        background: var(--petak-neutral);
+        background: var(--petak-row-active-border);
         content: "";
         pointer-events: none;
     }
@@ -123,7 +124,7 @@
     .petak--striped .tabulator-row.tabulator-selected,
     .petak--striped .tabulator-row.tabulator-selected.tabulator-row-even,
     .petak--striped .tabulator-row.tabulator-selected.tabulator-row-odd {
-        background: var(--petak-surface-selected);
+        background: var(--petak-row-active-surface);
     }
 
     .petak .tabulator-row .tabulator-cell {
@@ -136,8 +137,8 @@
         min-width: 0;
     }
 
-    .petak--bordered .tabulator-row .tabulator-cell ~ .tabulator-cell {
-        border-inline-start: var(--petak-border-width) solid var(--petak-row-divider);
+    .petak--bordered .tabulator-row .tabulator-cell {
+        border-inline-end: var(--petak-border-width) solid var(--petak-column-divider);
     }
 
     .petak .tabulator-row .tabulator-cell.tabulator-editing {
@@ -153,12 +154,15 @@
 
     .petak .tabulator .tabulator-header .tabulator-frozen.tabulator-frozen-left,
     .petak .tabulator-row .tabulator-cell.tabulator-frozen.tabulator-frozen-left {
-        border-inline-end: var(--petak-border-width) solid var(--petak-border-color);
+        border-inline-end: calc(var(--petak-border-width) * 3) solid var(--petak-frozen-divider);
+        box-shadow: none;
     }
 
     .petak .tabulator .tabulator-header .tabulator-frozen.tabulator-frozen-right,
     .petak .tabulator-row .tabulator-cell.tabulator-frozen.tabulator-frozen-right {
-        border-inline-start: var(--petak-border-width) solid var(--petak-border-color);
+        border-inline-start: calc(var(--petak-border-width) * 3) solid var(--petak-frozen-divider);
+        border-inline-end: 0;
+        box-shadow: none;
     }
 
     .petak .tabulator .tabulator-placeholder .tabulator-placeholder-contents {
@@ -185,7 +189,7 @@
         color: var(--petak-muted-color);
         background: var(--petak-footer-surface);
         border: 0;
-        border-block-start: var(--petak-border-width) solid var(--petak-border-color);
+        border-block-start: var(--petak-border-width) solid var(--petak-row-divider);
         min-height: var(--petak-footer-height);
         padding: .625rem var(--petak-cell-padding-inline);
         font-size: var(--petak-font-size-sm);
@@ -256,8 +260,8 @@
         min-width: var(--petak-control-height);
         min-height: var(--petak-control-height);
         color: var(--petak-color);
-        background: var(--petak-surface-raised);
-        border: var(--petak-border-width) solid var(--petak-border-color);
+        background: var(--petak-control-surface);
+        border: var(--petak-border-width) solid var(--petak-control-border);
         border-radius: 0;
         margin: 0;
         padding: 0 .625rem;
@@ -286,8 +290,8 @@
         z-index: 1;
         color: var(--petak-accent);
         background: var(--petak-surface-hover);
-        border-color: var(--petak-accent);
-        outline: var(--petak-border-width) solid var(--petak-accent);
+        border-color: var(--petak-control-border-hover);
+        outline: var(--petak-border-width) solid var(--petak-control-border-hover);
         outline-offset: calc(0px - var(--petak-border-width));
     }
 
@@ -304,8 +308,8 @@
     .petak .tabulator .tabulator-footer .tabulator-page-size {
         min-height: var(--petak-control-height);
         color: var(--petak-color);
-        background: var(--petak-surface-raised);
-        border: var(--petak-border-width) solid var(--petak-border-color);
+        background: var(--petak-control-surface);
+        border: var(--petak-border-width) solid var(--petak-control-border);
         border-radius: var(--petak-radius);
         margin: 0;
         padding: 0 1.75rem 0 .625rem;
@@ -423,8 +427,8 @@
         min-height: var(--petak-control-height);
         padding: .55rem .8rem;
         color: var(--petak-color);
-        background: var(--petak-surface-raised);
-        border: var(--petak-border-width) solid var(--petak-border-color);
+        background: var(--petak-control-surface);
+        border: var(--petak-border-width) solid var(--petak-control-border);
         border-radius: var(--petak-radius);
         font-size: var(--petak-font-size);
         font-weight: 600;

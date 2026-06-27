@@ -300,6 +300,34 @@ describe('Petak transports and lifecycle', () => {
         expect(tables[0].options.columns.every((column) => !Object.hasOwn(column, 'formatter'))).toBe(true);
     });
 
+    it('enables tristate sorting on sortable Tabulator columns only', () => {
+        document.body.innerHTML = `
+            <div data-petak-grid data-petak-config="tristate-sort-config">
+                <div data-petak-renderer></div>
+                <div data-petak-status></div>
+            </div>
+            <script id="tristate-sort-config" type="application/json">
+                {
+                    "version":"1",
+                    "name":"tristate-sort",
+                    "mode":"local",
+                    "columns":[
+                        {"key":"name","label":"Name","sortable":true},
+                        {"key":"email","label":"Email","sortable":false}
+                    ],
+                    "initialResult":{"data":[{"name":"Ada","email":"ada@example.com"}]},
+                    "pagination":{"default_page_size":25,"page_sizes":[25]}
+                }
+            </script>
+        `;
+
+        createPetakGrid(document.querySelector('[data-petak-grid]'));
+
+        expect(tables[0].options.headerSortTristate).toBeUndefined();
+        expect(tables[0].options.columns[0].headerSortTristate).toBe(true);
+        expect(tables[0].options.columns[1]).not.toHaveProperty('headerSortTristate');
+    });
+
     it('falls back to fitColumns for invalid Tabulator layout config', () => {
         document.body.innerHTML = `
             <div data-petak-grid data-petak-config="invalid-layout-config">

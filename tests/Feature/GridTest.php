@@ -467,6 +467,8 @@ class GridTest extends TestCase
             ->assertSeeInOrder(['Charlie', 'Bravo'])
             ->assertDontSee('Alpha')
             ->assertSee('<strong>Charlie</strong>', false)
+            ->assertSee('petak_state%5Bblade-items%5D%5Bpage%5D=1&amp;petak_state%5Bblade-items%5D%5Bsize%5D=2', false)
+            ->assertDontSee('petak_state%5Bblade-items%5D%5Bsort%5D=name&amp;petak_state%5Bblade-items%5D%5Bdirection%5D=asc', false)
             ->assertSee('Next');
     }
 
