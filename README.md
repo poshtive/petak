@@ -209,15 +209,14 @@ Column::make('amount')
     ->responsivePriority(2);
 
 Column::make('reference')
-    ->fitContent();
+    ->compact();
 ```
 
 Leave `theme` as `null` to let Petak follow application tokens, Bootstrap
 variables, or the browser color scheme fallback. Use `theme('dark')` as a
 per-grid override.
 
-Columns named `id` or ending in `_id`, and `ActionColumn`, fit their rendered
-content by default. Call `fitContent(false)` to opt out.
+Use `compact()`, `width()`, or `minWidth()` when a column needs explicit sizing.
 
 Both Blade and Tabulator renderers consume the same `--petak-*` token contract.
 Applications should override those tokens on `.petak` instead of targeting

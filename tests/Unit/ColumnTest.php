@@ -23,22 +23,40 @@ class ColumnTest extends TestCase
         $this->assertSame('USER ID', $id['label']);
         $this->assertSame(NumberFilter::type(), $id['filter']['type']);
         $this->assertSame('end', $id['align']);
-        $this->assertTrue($id['fit_content']);
+        $this->assertSame('fluid', $id['sizing']['mode']);
         $this->assertSame(BooleanFilter::type(), $active['filter']['type']);
         $this->assertSame('center', $active['align']);
         $this->assertSame(DateFilter::type(), $date['filter']['type']);
     }
 
-    public function test_fit_content_can_be_configured_and_is_enabled_for_actions(): void
+    public function test_column_sizing_can_be_configured_explicitly(): void
     {
-        $column = Column::make('reference')->fitContent()->toArray();
+        $column = Column::make('reference')
+            ->compact(min: 72)
+            ->width('12ch')
+            ->maxWidth(240)
+            ->toArray();
         $regular = Column::make('name')->toArray();
         $action = ActionColumn::make()->toArray();
 
-        $this->assertTrue($column['fit_content']);
-        $this->assertFalse($regular['fit_content']);
-        $this->assertTrue($action['fit_content']);
-        $this->assertFalse(Column::make('id')->fitContent(false)->toArray()['fit_content']);
+        $this->assertSame([
+            'mode' => 'compact',
+            'width' => '12ch',
+            'min_width' => 72,
+            'max_width' => 240,
+        ], $column['sizing']);
+        $this->assertSame('fluid', $regular['sizing']['mode']);
+        $this->assertSame('fluid', $action['sizing']['mode']);
+        $this->assertSame('fluid', Column::make('id')->fluid()->toArray()['sizing']['mode']);
+    }
+
+    public function test_column_width_rejects_unsafe_css_values(): void
+    {
+        $this->assertSame(120, Column::make('name')->width(120)->toArray()['sizing']['width']);
+        $this->assertSame('25%', Column::make('name')->width('25%')->toArray()['sizing']['width']);
+
+        $this->expectException(\InvalidArgumentException::class);
+        Column::make('name')->width('calc(100% - 1rem)');
     }
 
     public function test_vertical_alignment_can_be_configured(): void

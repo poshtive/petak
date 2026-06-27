@@ -11,7 +11,7 @@ use Poshtive\Petak\Columns\HtmlColumn;
 $grid->columns([
     Column::make('id')
         ->integer()
-        ->fitContent(),
+        ->compact(),
 
     Column::make('name')
         ->label('Customer')
@@ -39,4 +39,3 @@ $grid->columns([
     ActionColumn::make()->view('users.actions'),
 ]);
 ```
-

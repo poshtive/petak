@@ -16,6 +16,27 @@
 
         return url()->current().'?'.http_build_query($query);
     };
+    $sizingAttributes = function ($column): array {
+        $sizing = $column->toArray()['sizing'];
+        $style = [];
+
+        if ($sizing['width'] !== null) {
+            $style[] = 'width: '.$sizing['width'].(is_int($sizing['width']) ? 'px' : '');
+        }
+
+        if ($sizing['min_width'] !== null) {
+            $style[] = 'min-width: '.$sizing['min_width'].'px';
+        }
+
+        if ($sizing['max_width'] !== null) {
+            $style[] = 'max-width: '.$sizing['max_width'].'px';
+        }
+
+        return [
+            'mode' => $sizing['mode'],
+            'style' => implode('; ', $style),
+        ];
+    };
     $rootClasses = [
         'petak',
         'petak--blade',
@@ -56,11 +77,13 @@
                 <thead>
                     <tr>
                         @foreach ($definition->columns as $column)
+                            @php($sizing = $sizingAttributes($column))
                             <th
                                 scope="col"
                                 data-align="{{ $column->toArray()['align'] }}"
                                 data-vertical-align="{{ $column->toArray()['vertical_align'] ?? $configuration['appearance']['vertical_align'] }}"
-                                @if ($column->toArray()['fit_content']) data-fit-content @endif
+                                data-sizing="{{ $sizing['mode'] }}"
+                                @if ($sizing['style']) style="{{ $sizing['style'] }}" @endif
                             >
                                 @if ($column->isSortable())
                                     <a href="{{ $url([
@@ -78,9 +101,11 @@
                     </tr>
                     <tr>
                         @foreach ($definition->columns as $column)
+                            @php($sizing = $sizingAttributes($column))
                             <th
                                 data-vertical-align="{{ $column->toArray()['vertical_align'] ?? $configuration['appearance']['vertical_align'] }}"
-                                @if ($column->toArray()['fit_content']) data-fit-content @endif
+                                data-sizing="{{ $sizing['mode'] }}"
+                                @if ($sizing['style']) style="{{ $sizing['style'] }}" @endif
                             >
                                 @if ($column->filterDefinition())
                                     @include('petak::partials.filter-control', [
@@ -97,10 +122,12 @@
                     @forelse ($result->data as $row)
                         <tr>
                             @foreach ($definition->columns as $column)
+                                @php($sizing = $sizingAttributes($column))
                                 <td
                                     data-align="{{ $column->toArray()['align'] }}"
                                     data-vertical-align="{{ $column->toArray()['vertical_align'] ?? $configuration['appearance']['vertical_align'] }}"
-                                    @if ($column->toArray()['fit_content']) data-fit-content @endif
+                                    data-sizing="{{ $sizing['mode'] }}"
+                                    @if ($sizing['style']) style="{{ $sizing['style'] }}" @endif
                                 >
                                     @if ($column->isTrustedHtml())
                                         {!! $row[$column->key()] !!}

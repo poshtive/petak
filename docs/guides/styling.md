@@ -30,7 +30,7 @@ $grid
 ```php
 Column::make('amount')->align('end');
 Column::make('status')->align('center');
-Column::make('action')->fitContent();
+Column::make('action')->compact();
 Column::make('notes')->verticalAlign('top');
 Column::make('created_at')->responsivePriority(2);
 Column::make('actions')->pin('right');

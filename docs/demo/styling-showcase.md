@@ -16,7 +16,7 @@ Tune individual columns:
 
 ```php
 Column::make('amount')->number()->align('end');
-Column::make('action')->fitContent();
+Column::make('action')->compact();
 Column::make('notes')->verticalAlign('top');
 Column::make('created_at')->responsivePriority(2);
 ```
@@ -30,4 +30,3 @@ Override Petak tokens in app CSS:
     --petak-surface-hover: color-mix(in srgb, var(--admin-accent), transparent 92%);
 }
 ```
-

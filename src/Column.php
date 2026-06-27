@@ -52,7 +52,13 @@ class Column
 
     private int $responsivePriority = 0;
 
-    private bool $fitContent = false;
+    private string $sizingMode = 'fluid';
+
+    private int|string|null $width = null;
+
+    private ?int $minWidth = null;
+
+    private ?int $maxWidth = null;
 
     private ?string $pin = null;
 
@@ -66,7 +72,6 @@ class Column
         if ($key === 'id' || Str::endsWith($key, '_id')) {
             $this->label = Str::upper(Str::of($key)->replace('_', ' ')->toString());
             $this->integer();
-            $this->fitContent();
         } elseif (Str::startsWith($key, ['is_', 'has_'])) {
             $this->boolean();
         } elseif (Str::endsWith($key, ['_at', '_date', '_on'])) {
@@ -214,9 +219,45 @@ class Column
         return $this;
     }
 
-    public function fitContent(bool $enabled = true): static
+    public function compact(?int $min = null): static
     {
-        $this->fitContent = $enabled;
+        $this->sizingMode = 'compact';
+
+        if ($min !== null) {
+            $this->minWidth($min);
+        }
+
+        return $this;
+    }
+
+    public function fluid(?int $min = null): static
+    {
+        $this->sizingMode = 'fluid';
+
+        if ($min !== null) {
+            $this->minWidth($min);
+        }
+
+        return $this;
+    }
+
+    public function width(int|string|null $width): static
+    {
+        $this->width = $width === null ? null : $this->normalizeWidth($width);
+
+        return $this;
+    }
+
+    public function minWidth(?int $width): static
+    {
+        $this->minWidth = $width === null ? null : max(0, $width);
+
+        return $this;
+    }
+
+    public function maxWidth(?int $width): static
+    {
+        $this->maxWidth = $width === null ? null : max(0, $width);
 
         return $this;
     }
@@ -386,10 +427,30 @@ class Column
             'align' => $this->align,
             'vertical_align' => $this->verticalAlign,
             'responsive_priority' => $this->responsivePriority,
-            'fit_content' => $this->fitContent,
+            'sizing' => [
+                'mode' => $this->sizingMode,
+                'width' => $this->width,
+                'min_width' => $this->minWidth,
+                'max_width' => $this->maxWidth,
+            ],
             'pin' => $this->pin,
             'filter' => $this->filter?->toArray(),
         ];
+    }
+
+    private function normalizeWidth(int|string $width): int|string
+    {
+        if (is_int($width)) {
+            return max(0, $width);
+        }
+
+        $width = trim($width);
+
+        if (! preg_match('/^\d+(?:\.\d+)?(?:%|px|rem|em|ch|vw|vmin|vmax)$/', $width)) {
+            throw new \InvalidArgumentException('Column width must be an integer pixel value or a CSS size using %, px, rem, em, ch, vw, vmin, or vmax.');
+        }
+
+        return $width;
     }
 
     private function defaultFilter(): Filter

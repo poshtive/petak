@@ -10,6 +10,7 @@ vi.mock('tabulator-tables', () => ({
             this.handlers = {};
             this.destroy = vi.fn();
             this.setData = vi.fn(() => Promise.resolve());
+            this.setPage = vi.fn(() => Promise.resolve());
             this.setFilter = vi.fn();
             this.columns = new Map();
             this.getColumn = vi.fn((field) => this.columns.get(field));
@@ -40,6 +41,7 @@ import {
 
 describe('Petak transports and lifecycle', () => {
     beforeEach(() => {
+        vi.useRealTimers();
         document.body.innerHTML = '';
         tables.length = 0;
         global.fetch = undefined;
@@ -116,6 +118,38 @@ describe('Petak transports and lifecycle', () => {
         expect(tables[0].destroy).toHaveBeenCalledOnce();
     });
 
+    it('does not mutate renderer opacity or wrapper height during table lifecycle', () => {
+        document.body.innerHTML = `
+            <div data-petak-grid data-petak-config="stable-render-config">
+                <div data-petak-renderer></div>
+                <div data-petak-status></div>
+            </div>
+            <script id="stable-render-config" type="application/json">
+                {
+                    "version":"1",
+                    "name":"users",
+                    "mode":"remote",
+                    "endpoint":"/users",
+                    "columns":[],
+                    "pagination":{"default_page_size":25,"page_sizes":[25]}
+                }
+            </script>
+        `;
+
+        const petakEl = document.querySelector('[data-petak-grid]');
+        const renderer = document.querySelector('[data-petak-renderer]');
+        createPetakGrid(petakEl, {
+            transport: { load: vi.fn() },
+        });
+
+        petakEl.getBoundingClientRect = () => ({ height: 360 });
+        tables[0].handlers.tableBuilt();
+        tables[0].handlers.renderComplete();
+
+        expect(renderer.style.opacity).toBe('');
+        expect(petakEl.style.minHeight).toBe('');
+    });
+
     it('initializes the same renderer only once', () => {
         document.body.innerHTML = `
             <div data-petak-grid data-petak-config="local-config">
@@ -140,7 +174,7 @@ describe('Petak transports and lifecycle', () => {
         expect(tables).toHaveLength(1);
     });
 
-    it('passes remote preloaded results and responsive layout to Tabulator', () => {
+    it('passes remote preloaded results and responsive layout to Tabulator', async () => {
         document.body.innerHTML = `
             <div data-petak-grid data-petak-config="preload-config">
                 <div data-petak-renderer></div>
@@ -152,9 +186,12 @@ describe('Petak transports and lifecycle', () => {
                     "name":"preloaded",
                     "mode":"remote",
                     "endpoint":"/users/data",
-                    "columns":[{"key":"email","label":"Email","responsive_priority":2,"pin":"right"}],
+                    "columns":[
+                        {"key":"name","label":"Name"},
+                        {"key":"email","label":"Email","responsive_priority":2,"pin":"right"}
+                    ],
                     "initialResult":{
-                        "data":[{"email":"ada@example.com"}],
+                        "data":[{"name":"Ada","email":"ada@example.com"}],
                         "meta":{"pagination":{"last_page":3,"total":51}}
                     },
                     "responsive":{"layout":"collapse","collapse_start_open":false},
@@ -167,17 +204,98 @@ describe('Petak transports and lifecycle', () => {
             transport: { load: vi.fn() },
         });
 
-        expect(tables[0].options.data).toEqual({
-            data: [{ email: 'ada@example.com' }],
-            last_page: 3,
-            last_row: 51,
-        });
+        // Remote mode with SSR: initial data must be served via ajaxRequestFunc, not tableOptions.data
+        expect(tables[0].options.data).toBeUndefined();
         expect(tables[0].options.ajaxURL).toBe('/users/data');
         expect(tables[0].options.responsiveLayout).toBe('collapse');
         expect(tables[0].options.responsiveLayoutCollapseStartOpen).toBe(false);
-        expect(tables[0].options.columns[0].responsive).toBe(2);
-        expect(tables[0].options.columns[0].frozen).toBe(true);
-        expect(tables[0].options.columns[0].frozenPosition).toBe('right');
+        expect(tables[0].options.rowHeader).toMatchObject({
+            formatter: 'responsiveCollapse',
+            width: 40,
+            headerSort: false,
+            frozen: true,
+        });
+        expect(tables[0].options.columns[1].field).toBe('email');
+        expect(tables[0].options.columns[1].responsive).toBe(2);
+        expect(tables[0].options.columns[1].minWidth).toBe(100);
+        expect(tables[0].options.columns[1].frozen).toBe(true);
+        // right-pinned column must be physically last in the array
+        expect(tables[0].options.columns).toHaveLength(2);
+
+        // SSR data is returned by ajaxRequestFunc on first invocation
+        await expect(tables[0].options.ajaxRequestFunc(null, null, {})).resolves.toMatchObject({
+            data: [{ name: 'Ada', email: 'ada@example.com' }],
+            last_page: 3,
+            last_row: 51,
+        });
+    });
+
+    it('lets Tabulator apply responsive defaults for collapse columns without explicit priority', () => {
+        document.body.innerHTML = `
+            <div data-petak-grid data-petak-config="collapse-default-config">
+                <div data-petak-renderer></div>
+                <div data-petak-status></div>
+            </div>
+            <script id="collapse-default-config" type="application/json">
+                {
+                    "version":"1",
+                    "name":"collapse-default",
+                    "mode":"local",
+                    "columns":[
+                        {"key":"first","label":"First","responsive_priority":0},
+                        {"key":"second","label":"Second","responsive_priority":0}
+                    ],
+                    "initialResult":{"data":[{"first":"A","second":"B"}]},
+                    "responsive":{"layout":"collapse","collapse_start_open":false},
+                    "pagination":{"default_page_size":25,"page_sizes":[25]}
+                }
+            </script>
+        `;
+
+        createPetakGrid(document.querySelector('[data-petak-grid]'));
+
+        expect(tables[0].options.rowHeader.formatter).toBe('responsiveCollapse');
+        expect(tables[0].options.columns[0]).not.toHaveProperty('responsive');
+        expect(tables[0].options.columns[1]).not.toHaveProperty('responsive');
+    });
+
+    it('uses Tabulator column defaults for plain grid column widths', () => {
+        document.body.innerHTML = `
+            <div data-petak-grid data-petak-config="plain-width-config">
+                <div data-petak-renderer></div>
+                <div data-petak-status></div>
+            </div>
+            <script id="plain-width-config" type="application/json">
+                {
+                    "version":"1",
+                    "name":"plain-width",
+                    "mode":"local",
+                    "columns":[
+                        {"key":"first","label":"First"},
+                        {"key":"second","label":"Second"},
+                        {"key":"third","label":"Third"}
+                    ],
+                    "initialResult":{"data":[
+                        {"first":"A","second":"Short","third":"A much longer value"},
+                        {"first":"B","second":"A much much longer value","third":"Tiny"}
+                    ]},
+                    "pagination":{"default_page_size":25,"page_sizes":[25]}
+                }
+            </script>
+        `;
+
+        createPetakGrid(document.querySelector('[data-petak-grid]'));
+
+        expect(tables[0].options.layout).toBe('fitColumns');
+        expect(tables[0].options.columnDefaults).toMatchObject({
+            minWidth: 80,
+            widthGrow: 1,
+            widthShrink: 1,
+        });
+        expect(tables[0].options.columns).toHaveLength(3);
+        expect(tables[0].options.columns.every((column) => !Object.hasOwn(column, 'minWidth'))).toBe(true);
+        expect(tables[0].options.columns.every((column) => !Object.hasOwn(column, 'widthGrow'))).toBe(true);
+        expect(tables[0].options.columns.every((column) => !Object.hasOwn(column, 'formatter'))).toBe(true);
     });
 
     it('versions and restores state from local storage', () => {
@@ -231,6 +349,47 @@ describe('Petak transports and lifecycle', () => {
         expect(JSON.parse(window.localStorage.getItem('petak:state:v1')).pageSize).toBe(25);
     });
 
+    it('persists only serializable sort and filter state', () => {
+        document.body.innerHTML = `
+            <div data-petak-grid data-petak-config="serial-state-config">
+                <div data-petak-renderer></div>
+                <div data-petak-status></div>
+            </div>
+            <script id="serial-state-config" type="application/json">
+                {
+                    "version":"1",
+                    "name":"serial-state",
+                    "mode":"local",
+                    "state":{"key":"serial-state","store":"local-storage","version":1},
+                    "columns":[
+                        {"key":"name","label":"Name","visible":true},
+                        {"key":"email","label":"Email","visible":true}
+                    ],
+                    "initialResult":{"data":[{"name":"Ada","email":"ada@example.com"}]},
+                    "pagination":{"default_page_size":25,"page_sizes":[25]}
+                }
+            </script>
+        `;
+
+        const circularColumn = {};
+        circularColumn.table = { column: circularColumn };
+        createPetakGrid(document.querySelector('[data-petak-grid]'));
+        tables[0].getSorters.mockReturnValue([
+            { column: circularColumn, field: 'name', dir: 'asc' },
+        ]);
+        tables[0].getFilters.mockReturnValue([
+            { field: 'email', type: 'like', value: 'ada' },
+        ]);
+
+        tables[0].handlers.tableBuilt();
+        expect(() => tables[0].handlers.dataSorted()).not.toThrow();
+
+        const state = JSON.parse(window.localStorage.getItem('petak:serial-state:v1'));
+        expect(state.sort).toEqual([{ field: 'name', dir: 'asc' }]);
+        expect(state.filters).toEqual([{ field: 'email', type: 'like', value: 'ada' }]);
+        expect(state.sort[0]).not.toHaveProperty('column');
+    });
+
     it('restores persisted search, sort, and filters on initialization', () => {
         window.localStorage.setItem('petak:state:v1', JSON.stringify({
             pageSize: 50,
@@ -278,6 +437,39 @@ describe('Petak transports and lifecycle', () => {
         expect(tables[0].setFilter).toHaveBeenCalledOnce();
         expect(tables[0].setFilter.mock.calls[0][0]({ name: 'Ada' })).toBe(true);
         expect(tables[0].setFilter.mock.calls[0][0]({ name: 'Bob' })).toBe(false);
+    });
+
+    it('resets remote search to the first page through Tabulator pagination', () => {
+        vi.useFakeTimers();
+        document.body.innerHTML = `
+            <div data-petak-grid data-petak-config="remote-search-config">
+                <input data-petak-search>
+                <div data-petak-renderer></div>
+                <div data-petak-status></div>
+            </div>
+            <script id="remote-search-config" type="application/json">
+                {
+                    "version":"1",
+                    "name":"remote-search",
+                    "mode":"remote",
+                    "endpoint":"/users",
+                    "columns":[{"key":"name","label":"Name","searchable":true}],
+                    "pagination":{"default_page_size":25,"page_sizes":[25]}
+                }
+            </script>
+        `;
+
+        createPetakGrid(document.querySelector('[data-petak-grid]'), {
+            transport: { load: vi.fn() },
+        });
+
+        const search = document.querySelector('[data-petak-search]');
+        search.value = 'ada';
+        search.dispatchEvent(new Event('input'));
+        vi.advanceTimersByTime(300);
+
+        expect(tables[0].setPage).toHaveBeenCalledWith(1);
+        expect(tables[0].setData).not.toHaveBeenCalled();
     });
 
     it('uses configured row keys for inline edits and restores failed edits', async () => {
@@ -393,7 +585,7 @@ describe('Petak transports and lifecycle', () => {
         expect(tables[0].blockRedraw).not.toHaveBeenCalled();
     });
 
-    it('fits configured columns after data is rendered', () => {
+    it('maps compact columns to a stable Tabulator width policy', () => {
         document.body.innerHTML = `
             <div data-petak-grid data-petak-config="fit-config">
                 <div data-petak-renderer></div>
@@ -406,9 +598,9 @@ describe('Petak transports and lifecycle', () => {
                     "mode":"local",
                     "appearance":{"vertical_align":"middle"},
                     "columns":[
-                        {"key":"id","label":"ID","align":"end","fit_content":true},
-                        {"key":"name","label":"Name","fit_content":false},
-                        {"key":"action","label":"Action","align":"end","vertical_align":"bottom","fit_content":true}
+                        {"key":"id","label":"ID","align":"end","sizing":{"mode":"compact","width":null,"min_width":null,"max_width":null}},
+                        {"key":"name","label":"Name","sizing":{"mode":"fluid","width":null,"min_width":null,"max_width":null}},
+                        {"key":"action","label":"Action","align":"end","vertical_align":"bottom","sizing":{"mode":"compact","width":"12ch","min_width":72,"max_width":160}}
                     ],
                     "initialResult":{"data":[{"id":1,"name":"Ada"}]},
                     "pagination":{"default_page_size":25,"page_sizes":[25]}
@@ -418,43 +610,21 @@ describe('Petak transports and lifecycle', () => {
 
         createPetakGrid(document.querySelector('[data-petak-grid]'));
 
-        const makeColumn = () => {
-            const definition = {};
-
-            return {
-                setWidth: vi.fn(),
-                isVisible: () => true,
-                getWidth: () => 72,
-                getDefinition: () => definition,
-                definition,
-            };
-        };
-        const idColumn = makeColumn();
-        const nameColumn = makeColumn();
-        const actionColumn = makeColumn();
-        tables[0].columns.set('id', idColumn);
-        tables[0].columns.set('name', nameColumn);
-        tables[0].columns.set('action', actionColumn);
-        tables[0].handlers.tableBuilt();
-        idColumn.setWidth.mockClear();
-        nameColumn.setWidth.mockClear();
-        actionColumn.setWidth.mockClear();
-        tables[0].blockRedraw.mockClear();
-        tables[0].restoreRedraw.mockClear();
-        tables[0].handlers.dataProcessed();
         tables[0].handlers.renderComplete();
+        expect(tables[0].blockRedraw).not.toHaveBeenCalled();
 
-        expect(idColumn.setWidth).toHaveBeenCalledWith(true);
-        expect(nameColumn.setWidth).not.toHaveBeenCalled();
-        expect(actionColumn.setWidth).toHaveBeenCalledWith(true);
-        expect(idColumn.definition.width).toBe(72);
-        expect(actionColumn.definition.width).toBe(72);
-        expect(tables[0].blockRedraw).toHaveBeenCalledOnce();
-        expect(tables[0].restoreRedraw).toHaveBeenCalledOnce();
         expect(tables[0].options.columns[0].hozAlign).toBe('right');
         expect(tables[0].options.columns[0].vertAlign).toBe('middle');
+        expect(tables[0].options.columns[0].minWidth).toBe(56);
+        expect(tables[0].options.columns[0].widthGrow).toBe(0);
+        expect(tables[0].options.columns[0].widthShrink).toBe(0);
+        expect(tables[0].options.columns[1].widthGrow).toBeUndefined();
         expect(tables[0].options.columns[2].hozAlign).toBe('right');
         expect(tables[0].options.columns[2].vertAlign).toBe('bottom');
+        expect(tables[0].options.columns[2].width).toBe('12ch');
+        expect(tables[0].options.columns[2].minWidth).toBe(72);
+        expect(tables[0].options.columns[2].maxWidth).toBe(160);
+        expect(tables[0].options.columns[2].widthGrow).toBe(0);
         expect(tables[0].options.paginationCounter(25, 1, 1, 57)).toBe('Showing 1 to 25 of 57 entries');
         expect(tables[0].options.paginationCounter(25, 0, 1, 0)).toBe('Showing 0 to 0 of 0 entries');
         expect(tables[0].options.paginationCounter(25, 1, 1, 1)).toBe('Showing 1 to 1 of 1 entry');
@@ -553,7 +723,7 @@ describe('Petak transports and lifecycle', () => {
         expect(wrapper.innerHTML).toContain('</a> <a');
     });
 
-    it('fits initial columns when the table is built', () => {
+    it('does not measure compact columns after remote table build', () => {
         document.body.innerHTML = `
             <div data-petak-grid data-petak-config="initial-fit-config">
                 <div data-petak-renderer></div>
@@ -566,8 +736,8 @@ describe('Petak transports and lifecycle', () => {
                     "mode":"remote",
                     "endpoint":"/users",
                     "columns":[
-                        {"key":"id","label":"ID","fit_content":true},
-                        {"key":"action","label":"Action","fit_content":true}
+                        {"key":"id","label":"ID","sizing":{"mode":"compact","width":null,"min_width":null,"max_width":null}},
+                        {"key":"action","label":"Action","sizing":{"mode":"compact","width":null,"min_width":null,"max_width":null}}
                     ],
                     "pagination":{"default_page_size":25,"page_sizes":[25]}
                 }
@@ -596,12 +766,14 @@ describe('Petak transports and lifecycle', () => {
         tables[0].columns.set('action', actionColumn);
         tables[0].handlers.tableBuilt();
 
-        expect(idColumn.setWidth).toHaveBeenCalledWith(true);
-        expect(actionColumn.setWidth).toHaveBeenCalledWith(true);
-        expect(idDefinition.width).toBe(48);
-        expect(actionDefinition.width).toBe(96);
-        expect(tables[0].blockRedraw).toHaveBeenCalledOnce();
-        expect(tables[0].restoreRedraw).toHaveBeenCalledOnce();
+        expect(idColumn.setWidth).not.toHaveBeenCalled();
+        expect(actionColumn.setWidth).not.toHaveBeenCalled();
+        expect(idDefinition.width).toBeUndefined();
+        expect(actionDefinition.width).toBeUndefined();
+        expect(tables[0].blockRedraw).not.toHaveBeenCalled();
+        expect(tables[0].restoreRedraw).not.toHaveBeenCalled();
+        expect(tables[0].options.columns[0].widthGrow).toBe(0);
+        expect(tables[0].options.columns[1].widthShrink).toBe(0);
     });
 
     it('uses a real button for the columns menu and closes it predictably', () => {

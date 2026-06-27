@@ -28,7 +28,7 @@
         vertical-align: bottom;
     }
 
-    .petak__table :is(th, td)[data-fit-content] {
+    .petak__table :is(th, td)[data-sizing="compact"] {
         width: 1%;
         white-space: nowrap;
     }
@@ -38,7 +38,7 @@
         min-width: 7rem;
     }
 
-    .petak__table th[data-fit-content] input {
+    .petak__table th[data-sizing="compact"] input {
         min-width: 0;
     }
 }

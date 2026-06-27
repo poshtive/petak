@@ -60,7 +60,7 @@ final class UserGridController
                 XlsxExport::make(),
             ])
             ->columns([
-                Column::make('uuid')->label('ID')->fitContent()->exportable(false),
+                Column::make('uuid')->label('ID')->compact()->exportable(false),
 
                 Column::make('name')
                     ->searchable()

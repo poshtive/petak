@@ -59,10 +59,9 @@ Column::make('amount')
 ## Layout Hints
 
 ```php
-Column::make('id')->fitContent();
+Column::make('id')->compact();
 Column::make('amount')->align('end');
 Column::make('status')->align('center');
 Column::make('notes')->verticalAlign('top');
 Column::make('created_at')->responsivePriority(2);
 ```
-

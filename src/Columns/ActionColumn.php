@@ -22,7 +22,6 @@ final class ActionColumn extends Column
             ->trustedHtml()
             ->exportable(false)
             ->align('end')
-            ->fitContent()
             ->responsivePriority(1);
     }
 

@@ -57,7 +57,11 @@ visible(bool $visible = true): static
 align(string $align): static
 verticalAlign(?string $align): static
 responsivePriority(int $priority): static
-fitContent(bool $enabled = true): static
+compact(?int $min = null): static
+fluid(?int $min = null): static
+width(int|string|null $width): static
+minWidth(?int $width): static
+maxWidth(?int $width): static
 pin(string $side = 'left'): static
 trustedHtml(bool $enabled = true): static
 ```
@@ -65,5 +69,10 @@ trustedHtml(bool $enabled = true): static
 Alignment values: `start`, `center`, `end`.
 
 Vertical alignment values: `top`, `middle`, `bottom`.
+
+`compact()` asks renderers to keep the column narrow and avoid participating in
+main content expansion. `fluid()` marks the column as flexible.
+`width()` accepts integer pixel values or CSS sizes using `%`, `px`, `rem`,
+`em`, `ch`, `vw`, `vmin`, or `vmax`.
 
 Pin side values: `left`, `right`.
