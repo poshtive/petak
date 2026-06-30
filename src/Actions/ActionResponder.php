@@ -9,6 +9,7 @@ use Poshtive\Petak\Exports\CsvExport;
 use Poshtive\Petak\Exports\XlsxExport;
 use Poshtive\Petak\GridDefinition;
 use Poshtive\Petak\GridRequest;
+use Poshtive\Petak\PetakConfig;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -22,6 +23,7 @@ final readonly class ActionResponder
         private GridDefinition $definition,
         private array $bulkActions,
         private array $exports,
+        private PetakConfig $config,
     ) {}
 
     public function respond(Request $request): Response
@@ -69,7 +71,7 @@ final readonly class ActionResponder
         abort_unless($export->authorized(), 403);
 
         $payload = (array) $request->input('petak_action.request', []);
-        $gridRequest = GridRequest::fromHttp(Request::create('/', 'GET', $payload), $this->definition);
+        $gridRequest = GridRequest::fromHttp(Request::create('/', 'GET', $payload), $this->definition, $this->config);
         $columns = array_filter(
             $this->definition->columns,
             static fn (Column $column) => $column->isExportable(),

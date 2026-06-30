@@ -1,3 +1,5 @@
+import { hasFilterValue } from '../../core/filters.js';
+
 function compareValues(left, right) {
     if (left === right) {
         return 0;
@@ -39,23 +41,6 @@ function matchesFilter(actual, operator, expected) {
         is_empty: () => actual === null || actual === undefined || actual === '',
         is_not_empty: () => actual !== null && actual !== undefined && actual !== '',
     }[operator]?.() ?? actualString.includes(expectedString);
-}
-
-function operatorNeedsValue(operator) {
-    return !['is_empty', 'is_not_empty'].includes(operator);
-}
-
-function hasFilterValue(filter) {
-    if (!operatorNeedsValue(filter.operator)) {
-        return true;
-    }
-
-    if (['between', 'not_between'].includes(filter.operator)) {
-        return filter.value?.from !== '' && filter.value?.from !== undefined && filter.value?.from !== null
-            && filter.value?.to !== '' && filter.value?.to !== undefined && filter.value?.to !== null;
-    }
-
-    return filter.value !== '' && filter.value !== null && filter.value !== undefined;
 }
 
 export function localResult(config, state) {

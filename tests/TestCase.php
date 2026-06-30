@@ -22,5 +22,7 @@ abstract class TestCase extends Orchestra
             'database' => ':memory:',
             'prefix' => '',
         ]);
+        $app['config']->set('app.url', 'http://localhost');
+        $app['url']->forceRootUrl('http://localhost');
     }
 }

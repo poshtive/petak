@@ -8,10 +8,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use LogicException;
-use Poshtive\Petak\Actions\ActionResponder;
 use Poshtive\Petak\Actions\BulkAction;
 use Poshtive\Petak\Enums\GridMode;
-use Poshtive\Petak\Enums\SortDirection;
 use Poshtive\Petak\Exports\CsvExport;
 use Poshtive\Petak\Exports\XlsxExport;
 use Poshtive\Petak\State\GridState;
@@ -81,22 +79,27 @@ final class GridBuilder
 
     private ?GridDefinition $definition = null;
 
+    private ?GridResponder $responder = null;
+
+    private ?GridSchema $schema = null;
+
     public function __construct(
         private readonly SourceFactory $sourceFactory,
         private readonly GridEngine $engine,
+        private readonly PetakConfig $config,
     ) {
-        $this->defaultPageSize = (int) config('petak.default_page_size', config('petak.pagination.default_page_size', 25));
-        $this->maxPageSize = (int) config('petak.max_page_size', config('petak.pagination.max_page_size', 250));
-        $this->pageSizes = (array) config('petak.page_sizes', config('petak.pagination.page_sizes', [10, 25, 50, 100]));
-        $this->density = (string) config('petak.appearance.density', 'comfortable');
-        $this->striped = (bool) config('petak.appearance.striped', false);
-        $this->bordered = (bool) config('petak.appearance.bordered', true);
-        $this->theme = config('petak.appearance.theme');
-        $this->preload((bool) config('petak.preload', false));
-        $this->responsiveLayout(config('petak.responsive.layout'));
-        $this->responsiveCollapseStartOpen = (bool) config('petak.responsive.collapse_start_open', false);
+        $this->defaultPageSize = $config->defaultPageSize;
+        $this->maxPageSize = $config->maxPageSize;
+        $this->pageSizes = $config->pageSizes;
+        $this->density = $config->density;
+        $this->striped = $config->striped;
+        $this->bordered = $config->bordered;
+        $this->theme = $config->theme;
+        $this->preload = $config->preload;
+        $this->responsiveLayout = $config->responsiveLayout;
+        $this->responsiveCollapseStartOpen = $config->responsiveCollapseStartOpen;
         $this->rendererOptions = $this->configuredRendererOptions();
-        $this->verticalAlign((string) config('petak.appearance.vertical_align', 'middle'));
+        $this->verticalAlign = $config->verticalAlign;
     }
 
     public function source(mixed $source): self
@@ -366,17 +369,11 @@ final class GridBuilder
     /** @return array<string, mixed> */
     private function configuredRendererOptions(): array
     {
-        $maxFrozenWidthRatio = (float) config('petak.renderer_options.native.sticky.max_frozen_width_ratio', 0.55);
-        $disableStickyBelow = (int) config('petak.renderer_options.native.sticky.disable_below', 480);
-
-        $maxFrozenWidthRatio = min(1.0, max(0.1, $maxFrozenWidthRatio));
-        $disableStickyBelow = max(0, $disableStickyBelow);
-
         return [
             'native' => [
                 'sticky' => [
-                    'max_frozen_width_ratio' => $maxFrozenWidthRatio,
-                    'disable_below' => $disableStickyBelow,
+                    'max_frozen_width_ratio' => $this->config->stickyMaxFrozenWidthRatio,
+                    'disable_below' => $this->config->stickyDisableBelow,
                 ],
             ],
         ];
@@ -384,8 +381,7 @@ final class GridBuilder
 
     public function matches(Request $request): bool
     {
-        return $request->header('X-Petak-Request') === $this->name
-            || $request->query('petak') === $this->name;
+        return $this->responder()->matches($request);
     }
 
     public function response(?Request $request = null): JsonResponse
@@ -422,89 +418,65 @@ final class GridBuilder
 
     public function handle(Request $request, string|Closure $view, array $data = []): Response|View
     {
-        if ($this->matchesAction($request)) {
-            return $this->actionResponse($request);
-        }
-
-        if ($this->matches($request)) {
-            return $this->response($request);
-        }
-
-        if ($view instanceof Closure) {
-            return $view($this, $data);
-        }
-
-        return view($view, ['grid' => $this, ...$data]);
+        return $this->responder()->handle($request, $view, $data);
     }
 
     /** @return array<string, mixed> */
     public function configuration(?string $endpoint = null): array
     {
-        $definition = $this->definition();
-        $configuration = $definition->schema() + [
-            'endpoint' => $endpoint ?? url()->current(),
-            'renderer' => config('petak.default_renderer', config('petak.renderer', 'native')),
-            'global_search' => $this->globalSearch,
-            'state' => $this->state?->toArray(),
-            'bulk_actions' => array_values(array_map(
-                static fn (BulkAction $action) => $action->toArray(),
-                array_filter(
-                    $this->bulkActions,
-                    static fn (BulkAction $action) => $action->authorized(),
-                ),
-            )),
-            'exports' => array_values(array_map(
-                static fn (CsvExport|XlsxExport $export) => $export->toArray(),
-                array_filter(
-                    $this->exports,
-                    static fn (CsvExport|XlsxExport $export) => $export->available(),
-                ),
-            )),
-        ];
-
-        if ($definition->mode === GridMode::Local || $definition->preload) {
-            $maxLocalRows = (int) config('petak.max_local_rows', config('petak.limits.max_local_rows', 1000));
-            $request = new GridRequest(
-                page: 1,
-                pageSize: $definition->mode === GridMode::Local
-                    ? ($maxLocalRows > 0 ? $maxLocalRows + 1 : PHP_INT_MAX)
-                    : $definition->defaultPageSize,
-                sort: array_map(
-                    static fn (array $item) => [
-                        'field' => $item['field'],
-                        'direction' => SortDirection::from($item['direction']),
-                    ],
-                    $definition->defaultSort,
-                ),
-                filters: [],
-            );
-            $initialResult = $this->engine->execute($definition, $request);
-            $total = (int) data_get($initialResult->meta, 'pagination.total', count($initialResult->data));
-
-            if ($definition->mode === GridMode::Local && $maxLocalRows > 0 && $total > $maxLocalRows) {
-                throw new \LengthException(
-                    "Petak local mode is limited to {$maxLocalRows} rows. Use remote mode for larger datasets.",
-                );
-            }
-
-            $configuration['initialResult'] = $initialResult->toArray();
-        }
-
-        return $configuration;
+        return $this->schema()->build($endpoint);
     }
 
-    private function matchesAction(Request $request): bool
+    public function getName(): string
     {
-        return $request->input('petak_action.grid') === $this->name;
+        return $this->name;
     }
 
-    private function actionResponse(Request $request): Response
+    public function hasGlobalSearch(): bool
     {
-        return (new ActionResponder(
-            definition: $this->definition(),
-            bulkActions: $this->bulkActions,
-            exports: $this->exports,
-        ))->respond($request);
+        return $this->globalSearch;
+    }
+
+    public function getState(): ?GridState
+    {
+        return $this->state;
+    }
+
+    /** @return array<string, BulkAction> */
+    public function getBulkActions(): array
+    {
+        return $this->bulkActions;
+    }
+
+    /** @return array<string, CsvExport|XlsxExport> */
+    public function getExports(): array
+    {
+        return $this->exports;
+    }
+
+    public function defaultRenderer(): string
+    {
+        return $this->config->defaultRenderer;
+    }
+
+    public function maxLocalRows(): int
+    {
+        return $this->config->maxLocalRows;
+    }
+
+    public function getConfig(): PetakConfig
+    {
+        return $this->config;
+    }
+
+    private function responder(): GridResponder
+    {
+        return $this->responder ??= new GridResponder($this);
+    }
+
+    private function schema(): GridSchema
+    {
+        return $this->schema ??= new GridSchema($this, $this->engine);
     }
 
     private function forgetDefinition(): void

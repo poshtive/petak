@@ -20,11 +20,11 @@ function responsiveCandidates(config, state) {
         .sort((left, right) => right.responsive_priority - left.responsive_priority);
 }
 
-function visibleColumns(config, state) {
+export function visibleColumns(config, state) {
     return (config.columns ?? []).filter((column) => state.columns.visibility[column.key] !== false);
 }
 
-function hasBulkActions(config) {
+export function hasBulkActions(config) {
     return (config.bulk_actions?.length ?? 0) > 0;
 }
 
@@ -93,7 +93,7 @@ function columnWidth(root, column, available) {
     return configuredColumnWidth(column, available);
 }
 
-function controlColumnWidthForDensity(density) {
+export function controlColumnWidthForDensity(density) {
     if (density === 'compact') {
         return 32;
     }

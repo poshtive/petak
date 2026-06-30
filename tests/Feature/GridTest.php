@@ -27,6 +27,7 @@ use Poshtive\Petak\Filters\TextFilter;
 use Poshtive\Petak\Grid;
 use Poshtive\Petak\GridBuilder;
 use Poshtive\Petak\GridRequest;
+use Poshtive\Petak\PetakConfig;
 use Poshtive\Petak\State\GridState;
 use Poshtive\Petak\Tests\TestCase;
 
@@ -873,6 +874,9 @@ class GridTest extends TestCase
         $this->assertSame('uuid', $configuration['row_key']);
 
         config()->set('petak.limits.max_local_rows', 1);
+        app()->forgetInstance(PetakConfig::class);
+        app()->forgetInstance('petak');
+        Petak::clearResolvedInstance('petak');
 
         $this->expectException(\LengthException::class);
 

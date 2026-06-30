@@ -1,16 +1,8 @@
 import { executePetakAction } from '../../core/actions.js';
-import { configuredColumnWidth } from './layout.js';
+import { configuredColumnWidth, controlColumnWidthForDensity, hasBulkActions, visibleColumns } from './layout.js';
 import { el } from './dom.js';
 import { cellPlugin, filterPlugin } from './plugins.js';
 import { resultMeta } from './request.js';
-
-function visibleColumns(config, state) {
-    return (config.columns ?? []).filter((column) => state.columns.visibility[column.key] !== false);
-}
-
-function hasBulkActions(config) {
-    return (config.bulk_actions?.length ?? 0) > 0;
-}
 
 function hasFilterRow(columns) {
     return columns.some((column) => Boolean(column.filter));
@@ -57,18 +49,6 @@ function columnStyle(column) {
     }
 
     return styles.join('; ');
-}
-
-function controlColumnWidthForDensity(density) {
-    if (density === 'compact') {
-        return 32;
-    }
-
-    if (density === 'spacious') {
-        return 48;
-    }
-
-    return 40;
 }
 
 function tableMinWidth(columns, detailsControl, selectionControl, density) {

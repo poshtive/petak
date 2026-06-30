@@ -20,8 +20,9 @@ final readonly class GridRequest
         public ?string $search = null,
     ) {}
 
-    public static function fromHttp(Request $request, GridDefinition $definition): self
+    public static function fromHttp(Request $request, GridDefinition $definition, ?PetakConfig $config = null): self
     {
+        $config ??= self::resolveConfig();
         $payload = $request->input('petak_request');
 
         if (is_string($payload)) {
@@ -70,13 +71,13 @@ final readonly class GridRequest
         }
 
         $rawFilters = (array) ($payload['filters'] ?? []);
-        if (count($rawFilters, COUNT_RECURSIVE) > (int) config('petak.max_filters', config('petak.limits.max_filters', 20)) * 5) {
+        if (count($rawFilters, COUNT_RECURSIVE) > $config->maxFilters * 5) {
             throw ValidationException::withMessages(['filters' => 'Too many filters.']);
         }
 
-        $filters = self::normalizeFilters($rawFilters, $definition);
+        $filters = self::normalizeFilters($rawFilters, $definition, $config->maxFilterDepth);
 
-        $search = self::normalizeSearch(data_get($payload, 'search.value'));
+        $search = self::normalizeSearch(data_get($payload, 'search.value'), $config->maxSearchLength);
 
         return new self(
             page: $page,
@@ -90,9 +91,10 @@ final readonly class GridRequest
     private static function normalizeFilters(
         array $items,
         GridDefinition $definition,
+        int $maxDepth,
         int $depth = 1,
     ): array {
-        if ($depth > (int) config('petak.max_filter_depth', config('petak.limits.max_filter_depth', 3))) {
+        if ($depth > $maxDepth) {
             throw ValidationException::withMessages(['filters' => 'Filter group depth exceeded.']);
         }
 
@@ -111,6 +113,7 @@ final readonly class GridRequest
                     'filters' => self::normalizeFilters(
                         (array) $item['filters'],
                         $definition,
+                        $maxDepth,
                         $depth + 1,
                     ),
                 ];
@@ -136,14 +139,13 @@ final readonly class GridRequest
         return $filters;
     }
 
-    private static function normalizeSearch(mixed $search): ?string
+    private static function normalizeSearch(mixed $search, int $maxLength): ?string
     {
         if (! is_scalar($search)) {
             return null;
         }
 
         $search = (string) $search;
-        $maxLength = (int) config('petak.max_search_length', config('petak.limits.max_search_length', 100));
 
         if ($maxLength > 0 && mb_strlen($search) > $maxLength) {
             throw ValidationException::withMessages([
@@ -154,8 +156,9 @@ final readonly class GridRequest
         return $search;
     }
 
-    public static function fromBlade(Request $request, GridDefinition $definition): self
+    public static function fromBlade(Request $request, GridDefinition $definition, ?PetakConfig $config = null): self
     {
+        $config ??= self::resolveConfig();
         $state = $request->input("petak_state.{$definition->name}", []);
         $state = is_array($state) ? $state : [];
         $filters = [];
@@ -223,7 +226,12 @@ final readonly class GridRequest
             pageSize: $pageSize,
             sort: $sort,
             filters: $filters,
-            search: self::normalizeSearch($state['search'] ?? null),
+            search: self::normalizeSearch($state['search'] ?? null, $config->maxSearchLength),
         );
+    }
+
+    private static function resolveConfig(): PetakConfig
+    {
+        return app(PetakConfig::class);
     }
 }

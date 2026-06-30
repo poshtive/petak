@@ -21,6 +21,7 @@ final class GridPage
         private readonly Container $container,
         private readonly SourceFactory $sourceFactory,
         private readonly GridEngine $engine,
+        private readonly PetakConfig $config,
     ) {}
 
     public function grid(
@@ -101,7 +102,7 @@ final class GridPage
         }
 
         if ($factory instanceof Closure) {
-            $builder = new GridBuilder($this->sourceFactory, $this->engine);
+            $builder = new GridBuilder($this->sourceFactory, $this->engine, $this->config);
             $configured = $this->container->call($factory, ['grid' => $builder]);
 
             if ($configured !== null && ! $configured instanceof GridBuilder) {
@@ -118,7 +119,7 @@ final class GridPage
 
     private function fromGrid(Grid $grid): GridBuilder
     {
-        $builder = new GridBuilder($this->sourceFactory, $this->engine);
+        $builder = new GridBuilder($this->sourceFactory, $this->engine, $this->config);
         $this->container->call([$grid, 'configure'], ['grid' => $builder]);
 
         return $builder;

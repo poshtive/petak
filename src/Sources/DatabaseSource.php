@@ -4,6 +4,7 @@ namespace Poshtive\Petak\Sources;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use Poshtive\Petak\Concerns\EscapesLike;
 use Poshtive\Petak\GridDefinition;
 use Poshtive\Petak\GridRequest;
 use Poshtive\Petak\GridResult;
@@ -12,6 +13,7 @@ use Poshtive\Petak\Sources\Concerns\BuildsResults;
 abstract class DatabaseSource implements DataSource
 {
     use BuildsResults;
+    use EscapesLike;
 
     public function __construct(protected EloquentBuilder|QueryBuilder $query) {}
 
@@ -126,27 +128,5 @@ abstract class DatabaseSource implements DataSource
                 }
             });
         }
-    }
-
-    private function escapeLike(mixed $value): string
-    {
-        return addcslashes((string) $value, '%_\\');
-    }
-
-    private function applyLike(
-        EloquentBuilder|QueryBuilder $query,
-        string $field,
-        string $operator,
-        string $value,
-        string $boolean = 'and',
-    ): void {
-        $builder = $query instanceof EloquentBuilder ? $query->getQuery() : $query;
-        $wrapped = $builder->getGrammar()->wrap($field);
-
-        $query->whereRaw(
-            "{$wrapped} {$operator} ? escape '\\'",
-            [$value],
-            $boolean,
-        );
     }
 }

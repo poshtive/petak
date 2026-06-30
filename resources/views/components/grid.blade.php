@@ -7,7 +7,7 @@
 ])
 
 @php
-    $renderer ??= config('petak.default_renderer', config('petak.renderer', 'native'));
+        $renderer ??= app(\Poshtive\Petak\PetakConfig::class)->defaultRenderer;
     $configuration = $grid->configuration($endpoint);
     $configuration['renderer'] = $renderer;
     $configuration['transport'] = $transport;
@@ -26,25 +26,14 @@
     $configurationId = 'petak-config-'.$configuration['name'].'-'.\Illuminate\Support\Str::random(8);
 @endphp
 
-@if ($renderer === 'blade')
-    @include('petak::renderers.blade', [
-        'grid' => $grid,
-        'configuration' => $configuration,
-    ])
-@elseif ($renderer === 'native')
-    @include('petak::renderers.native', [
-        'configuration' => $configuration,
-        'configurationId' => $configurationId,
-        'rootClasses' => $rootClasses,
-        'appearance' => $appearance,
-        'transport' => $transport,
-    ])
-@else
-    @include('petak::renderers.native', [
-        'configuration' => $configuration,
-        'configurationId' => $configurationId,
-        'rootClasses' => $rootClasses,
-        'appearance' => $appearance,
-        'transport' => $transport,
-    ])
-@endif
+@php
+    $rendererView = app(\Poshtive\Petak\Renderers\RendererRegistry::class)->view($renderer);
+@endphp
+@include($rendererView, [
+    'grid' => $grid,
+    'configuration' => $configuration,
+    'configurationId' => $configurationId,
+    'rootClasses' => $rootClasses,
+    'appearance' => $appearance,
+    'transport' => $transport,
+])

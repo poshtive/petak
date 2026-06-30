@@ -15,11 +15,12 @@ final class PetakManager
         private readonly Container $container,
         private readonly SourceFactory $sourceFactory,
         private readonly GridEngine $engine,
+        private readonly PetakConfig $config,
     ) {}
 
     public function grid(string|Grid|null $grid = null): GridBuilder
     {
-        $builder = new GridBuilder($this->sourceFactory, $this->engine);
+        $builder = new GridBuilder($this->sourceFactory, $this->engine, $this->config);
 
         if ($grid === null) {
             return $builder;
@@ -43,7 +44,7 @@ final class PetakManager
 
     public function page(): GridPage
     {
-        return new GridPage($this->container, $this->sourceFactory, $this->engine);
+        return new GridPage($this->container, $this->sourceFactory, $this->engine, $this->config);
     }
 
     public function define(string $name, Closure $factory): void
