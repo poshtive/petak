@@ -6,7 +6,7 @@ The Blade renderer returns a server-rendered table.
 <x-petak::grid :grid="$grid" renderer="blade" />
 ```
 
-It uses the same grid definition and data source execution as the Tabulator
+It uses the same grid definition and data source execution as the native
 renderer. State is stored in the URL under `petak_state[grid-name]`.
 
 ```php

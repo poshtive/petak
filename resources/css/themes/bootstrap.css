@@ -75,7 +75,4 @@
         border-radius: var(--bs-border-radius-sm, .25rem);
     }
 
-    .petak .tabulator-row:hover {
-        background-color: var(--petak-surface-hover);
-    }
 }

@@ -10,7 +10,7 @@ Default values:
 
 ```php
 return [
-    'renderer' => 'tabulator',
+    'renderer' => 'native',
     'pagination' => [
         'default_page_size' => 25,
         'page_sizes' => [10, 25, 50, 100],
@@ -28,8 +28,11 @@ return [
         'collapse_start_open' => false,
     ],
     'renderer_options' => [
-        'tabulator' => [
-            'layout' => 'fitColumns',
+        'native' => [
+            'sticky' => [
+                'max_frozen_width_ratio' => 0.55,
+                'disable_below' => 480,
+            ],
         ],
     ],
     'appearance' => [
@@ -54,25 +57,22 @@ for database-backed application data.
 
 ## Preload
 
-`preload` controls whether remote Tabulator grids include the first result page
+`preload` controls whether remote native grids include the first result page
 in their initial configuration. It defaults to `false`; enable it globally only
 when the extra server-side query during page rendering is acceptable.
 
 ## Responsive Layout
 
 `responsive.layout` accepts `null`, `hide`, or `collapse`. Use `collapse` to
-move columns with larger `responsivePriority()` values into Tabulator's
-responsive row area when the table narrows.
+move columns with larger `responsivePriority()` values into each row's
+responsive detail area when the table narrows.
 
-## Tabulator Layout
+## Native Sticky Columns
 
-`renderer_options.tabulator.layout` controls Tabulator's global column layout
-policy. Accepted values are `fitColumns`, `fitData`, `fitDataFill`, and
-`fitDataStretch`. Invalid values fall back to `fitColumns`.
-
-Use `fitColumns` when the grid should fill its container. Use `fitDataFill`
-when content width should have more influence and horizontal overflow is
-preferable to aggressive column shrinking.
+`renderer_options.native.sticky.max_frozen_width_ratio` limits how much
+horizontal space frozen columns can consume before the renderer falls back to
+normal scrolling columns. `disable_below` disables sticky columns below the
+configured container width.
 
 ## Search Length
 

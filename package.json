@@ -15,7 +15,6 @@
     "keywords": [
         "laravel",
         "grid",
-        "tabulator",
         "datagrid",
         "petak"
     ],
@@ -23,8 +22,8 @@
         ".": "./resources/js/petak.js",
         "./petak.css": "./resources/css/petak.css",
         "./structural.css": "./resources/css/structural.css",
+        "./renderers/native.css": "./resources/css/renderers/native.css",
         "./renderers/blade.css": "./resources/css/renderers/blade.css",
-        "./renderers/tabulator.css": "./resources/css/renderers/tabulator.css",
         "./themes/default.css": "./resources/css/themes/default.css",
         "./themes/bootstrap.css": "./resources/css/themes/bootstrap.css"
     },
@@ -43,12 +42,8 @@
         "release:check": "pnpm test && composer validate --no-check-publish",
         "release:npm:dry-run": "npm publish --dry-run"
     },
-    "peerDependencies": {
-        "tabulator-tables": "^6.3.0"
-    },
     "devDependencies": {
         "jsdom": "^26.1.0",
-        "tabulator-tables": "^6.3.0",
         "vitest": "^3.2.0"
     }
 }

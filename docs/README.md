@@ -1,7 +1,7 @@
 # Petak Documentation
 
 Petak is a headless, composable data grid package for Laravel. Define your grid
-once, then render it with Tabulator, Blade, or Livewire transport.
+once, then render it with the native renderer, Blade, or Livewire transport.
 
 ## Start Here
 

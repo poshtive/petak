@@ -1,12 +1,13 @@
 @props([
     'grid',
-    'renderer' => 'tabulator',
+    'renderer' => null,
     'transport' => null,
     'endpoint' => null,
     'livewireMethod' => 'loadPetak',
 ])
 
 @php
+    $renderer ??= config('petak.default_renderer', config('petak.renderer', 'native'));
     $configuration = $grid->configuration($endpoint);
     $configuration['renderer'] = $renderer;
     $configuration['transport'] = $transport;
@@ -30,8 +31,16 @@
         'grid' => $grid,
         'configuration' => $configuration,
     ])
+@elseif ($renderer === 'native')
+    @include('petak::renderers.native', [
+        'configuration' => $configuration,
+        'configurationId' => $configurationId,
+        'rootClasses' => $rootClasses,
+        'appearance' => $appearance,
+        'transport' => $transport,
+    ])
 @else
-    @include('petak::renderers.tabulator', [
+    @include('petak::renderers.native', [
         'configuration' => $configuration,
         'configurationId' => $configurationId,
         'rootClasses' => $rootClasses,

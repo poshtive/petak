@@ -6,10 +6,10 @@ Install the PHP package:
 composer require poshtive/petak
 ```
 
-Install the JavaScript package and Tabulator peer dependency:
+Install the JavaScript package:
 
 ```bash
-pnpm add @poshtive/petak tabulator-tables
+pnpm add @poshtive/petak
 ```
 
 Publish the configuration file when you want to customize defaults:
@@ -31,4 +31,3 @@ composer require openspout/openspout
 When OpenSpout is available, `XlsxExport::make()` appears in the grid export
 schema. Without it, the grid continues to work and the Excel export button is
 not exposed.
-

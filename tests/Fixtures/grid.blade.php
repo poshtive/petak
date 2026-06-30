@@ -1,1 +1,1 @@
-<x-petak::grid :grid="$grid" :renderer="$renderer ?? 'tabulator'" :endpoint="$endpoint ?? null" />
+<x-petak::grid :grid="$grid" :renderer="$renderer ?? null" :endpoint="$endpoint ?? null" />

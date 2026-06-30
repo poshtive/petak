@@ -20,10 +20,6 @@
         overscroll-behavior-inline: contain;
     }
 
-    .petak--tabulator .petak__renderer {
-        overflow: visible;
-    }
-
     .petak__toolbar,
     .petak__pagination {
         display: flex;

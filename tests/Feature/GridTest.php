@@ -702,7 +702,8 @@ class GridTest extends TestCase
         config()->set('petak.preload', true);
         config()->set('petak.responsive.layout', 'hide');
         config()->set('petak.responsive.collapse_start_open', true);
-        config()->set('petak.renderer_options.tabulator.layout', 'fitDataFill');
+        config()->set('petak.renderer_options.native.sticky.max_frozen_width_ratio', 0.4);
+        config()->set('petak.renderer_options.native.sticky.disable_below', 360);
 
         $configuration = Petak::for(DB::table('petak_items'))
             ->name('configured-preload')
@@ -712,20 +713,23 @@ class GridTest extends TestCase
         $this->assertTrue($configuration['preload']);
         $this->assertSame('hide', $configuration['responsive']['layout']);
         $this->assertTrue($configuration['responsive']['collapse_start_open']);
-        $this->assertSame('fitDataFill', $configuration['renderer_options']['tabulator']['layout']);
+        $this->assertSame(0.4, $configuration['renderer_options']['native']['sticky']['max_frozen_width_ratio']);
+        $this->assertSame(360, $configuration['renderer_options']['native']['sticky']['disable_below']);
         $this->assertArrayHasKey('initialResult', $configuration);
     }
 
-    public function test_invalid_tabulator_layout_config_falls_back_to_fit_columns(): void
+    public function test_invalid_native_sticky_config_is_clamped(): void
     {
-        config()->set('petak.renderer_options.tabulator.layout', 'fitDataTable');
+        config()->set('petak.renderer_options.native.sticky.max_frozen_width_ratio', 2);
+        config()->set('petak.renderer_options.native.sticky.disable_below', -10);
 
         $configuration = Petak::for(DB::table('petak_items'))
-            ->name('configured-tabulator')
+            ->name('configured-native')
             ->columns(['id'])
             ->configuration('/petak/items/data');
 
-        $this->assertSame('fitColumns', $configuration['renderer_options']['tabulator']['layout']);
+        $this->assertSame(1.0, $configuration['renderer_options']['native']['sticky']['max_frozen_width_ratio']);
+        $this->assertSame(0, $configuration['renderer_options']['native']['sticky']['disable_below']);
     }
 
     public function test_bulk_edit_and_csv_export_actions_use_registered_server_callbacks(): void

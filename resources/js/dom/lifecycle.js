@@ -1,5 +1,5 @@
 import { activeElements, instances } from '../core/registry.js';
-import { createPetakGrid } from '../renderers/tabulator.js';
+import { createPetakGrid } from '../renderers/index.js';
 
 let lifecycleInitialized = false;
 

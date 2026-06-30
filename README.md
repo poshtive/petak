@@ -56,7 +56,7 @@ $grid = Petak::for(User::query())
 
 ## Blade renderer
 
-Blade uses the same definition and query engine as the Tabulator renderer:
+Blade uses the same definition and query engine as the native renderer:
 
 ```blade
 <x-petak::grid :grid="$grid" renderer="blade" />
@@ -125,8 +125,8 @@ $grid->state(
 );
 ```
 
-The Tabulator adapter persists page size, sort, filters, search, column order,
-and column visibility.
+The native renderer persists page size, sort, filters, search, and column
+visibility.
 
 ## Bulk actions, export, and inline editing
 
@@ -218,9 +218,9 @@ per-grid override.
 
 Use `compact()`, `width()`, or `minWidth()` when a column needs explicit sizing.
 
-Both Blade and Tabulator renderers consume the same `--petak-*` token contract.
+Both Blade and native renderers consume the same `--petak-*` token contract.
 Applications should override those tokens on `.petak` instead of targeting
-Tabulator internals.
+renderer internals.
 
 The Bootstrap compatibility theme only maps standard `--bs-*` variables. Brand
 or application-specific mappings belong in userland CSS loaded after the

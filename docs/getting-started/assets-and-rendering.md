@@ -14,13 +14,13 @@ Available CSS entry points:
 ```js
 import '@poshtive/petak/petak.css'; // structure + renderers + default theme
 import '@poshtive/petak/structural.css'; // shell structure only
-import '@poshtive/petak/renderers/tabulator.css'; // Tabulator vendor + adapter
+import '@poshtive/petak/renderers/native.css'; // native table renderer
 import '@poshtive/petak/renderers/blade.css'; // Blade table renderer
 import '@poshtive/petak/themes/default.css'; // default tokens and controls
 import '@poshtive/petak/themes/bootstrap.css'; // Bootstrap variable bridge
 ```
 
-Render a grid with the default Tabulator renderer:
+Render a grid with the default native renderer:
 
 ```blade
 <x-petak::grid :grid="$grid" />

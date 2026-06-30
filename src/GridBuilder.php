@@ -366,15 +366,18 @@ final class GridBuilder
     /** @return array<string, mixed> */
     private function configuredRendererOptions(): array
     {
-        $tabulatorLayout = config('petak.renderer_options.tabulator.layout', 'fitColumns');
+        $maxFrozenWidthRatio = (float) config('petak.renderer_options.native.sticky.max_frozen_width_ratio', 0.55);
+        $disableStickyBelow = (int) config('petak.renderer_options.native.sticky.disable_below', 480);
 
-        if (! in_array($tabulatorLayout, ['fitColumns', 'fitData', 'fitDataFill', 'fitDataStretch'], true)) {
-            $tabulatorLayout = 'fitColumns';
-        }
+        $maxFrozenWidthRatio = min(1.0, max(0.1, $maxFrozenWidthRatio));
+        $disableStickyBelow = max(0, $disableStickyBelow);
 
         return [
-            'tabulator' => [
-                'layout' => $tabulatorLayout,
+            'native' => [
+                'sticky' => [
+                    'max_frozen_width_ratio' => $maxFrozenWidthRatio,
+                    'disable_below' => $disableStickyBelow,
+                ],
             ],
         ];
     }
@@ -440,7 +443,7 @@ final class GridBuilder
         $definition = $this->definition();
         $configuration = $definition->schema() + [
             'endpoint' => $endpoint ?? url()->current(),
-            'renderer' => config('petak.default_renderer', config('petak.renderer', 'tabulator')),
+            'renderer' => config('petak.default_renderer', config('petak.renderer', 'native')),
             'global_search' => $this->globalSearch,
             'state' => $this->state?->toArray(),
             'bulk_actions' => array_values(array_map(

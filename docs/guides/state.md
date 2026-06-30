@@ -12,13 +12,12 @@ $grid->state(
 );
 ```
 
-The Tabulator adapter persists:
+The native renderer persists:
 
 - page size
 - sort
 - filters
 - search
-- column order
 - column visibility
 
 Increment the state version after changing column keys or filter behavior.

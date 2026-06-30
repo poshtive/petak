@@ -1,7 +1,7 @@
 @layer petak.vendor, petak.structure, petak.theme;
 
 @import './structural.css';
-@import './renderers/tabulator.css';
-@import './renderers/blade.css';
 @import './tokens.css';
 @import './themes/default.css';
+@import './renderers/blade.css';
+@import './renderers/native.css';

@@ -7,7 +7,6 @@
         "laravel",
         "grid",
         "datagrid",
-        "tabulator",
         "petak"
     ],
     "homepage": "https://github.com/poshtive/petak",

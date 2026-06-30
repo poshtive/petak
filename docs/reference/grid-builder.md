@@ -57,7 +57,7 @@ preload(bool $enabled = true): self
 ```
 
 `preload()` includes the first remote page in the grid configuration so the
-Tabulator renderer can paint initial rows without waiting for its first data
+native renderer can paint initial rows without waiting for its first data
 request. Local grids always include initial rows.
 
 ## State
@@ -94,7 +94,7 @@ Vertical alignment values: `top`, `middle`, `bottom`.
 
 Responsive layout values: `null`, `hide`, `collapse`. The `collapse` layout
 uses column `responsivePriority()` values to move lower-priority columns into
-Tabulator's responsive row area.
+each row's responsive detail area.
 
 ## Rendering and Execution
 

@@ -8,11 +8,11 @@ return [
     |--------------------------------------------------------------------------
     |
     | This renderer is used when the grid component does not receive an
-    | explicit renderer. Supported renderers are "tabulator" and "blade".
+    | explicit renderer. Supported renderers are "native" and "blade".
     |
     */
 
-    'renderer' => 'tabulator',
+    'renderer' => 'native',
 
     /*
     |--------------------------------------------------------------------------
@@ -65,7 +65,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Set layout to null, "hide", or "collapse". Collapse mode moves lower
-    | priority columns into Tabulator's responsive row area on narrow screens.
+    | priority columns into each row's responsive detail area on narrow screens.
     |
     */
 
@@ -82,14 +82,17 @@ return [
     | Renderer-specific options are intentionally limited to global config so
     | the fluent grid API stays renderer-agnostic.
     |
-    | Tabulator layout values: "fitColumns", "fitData", "fitDataFill", or
-    | "fitDataStretch". Invalid values fall back to "fitColumns".
+    | Native sticky columns use CSS position: sticky. When frozen columns would
+    | consume too much horizontal space, the renderer falls back to normal flow.
     |
     */
 
     'renderer_options' => [
-        'tabulator' => [
-            'layout' => 'fitColumns',
+        'native' => [
+            'sticky' => [
+                'max_frozen_width_ratio' => 0.55,
+                'disable_below' => 480,
+            ],
         ],
     ],
 

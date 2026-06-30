@@ -40,7 +40,7 @@ Column::make('name')
     );
 ```
 
-When an edit fails, the Tabulator adapter restores the old value and displays
+When an edit fails, the native renderer restores the old value and displays
 the error status.
 
 ## Action Routes
