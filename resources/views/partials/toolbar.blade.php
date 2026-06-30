@@ -33,7 +33,10 @@
                         <span class="petak__columns-caret" aria-hidden="true"></span>
                     </button>
                     <div class="petak__columns-menu" hidden data-petak-columns-menu>
-                        <div class="petak__columns-heading">Visible columns</div>
+                        <div class="petak__columns-header">
+                            <div class="petak__columns-heading">Visible columns</div>
+                        </div>
+                        <button class="petak__columns-select-all" type="button" data-petak-columns-select-all>Select all</button>
                         <div class="petak__columns-list">
                             @foreach ($configuration['columns'] as $column)
                                 <label>

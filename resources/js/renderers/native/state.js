@@ -7,6 +7,11 @@ function defaultPageSize(config) {
 export function createNativeState(config) {
     const storage = stateStorage(config);
     const persisted = storage?.load() ?? {};
+    const columnVisibility = {
+        ...Object.fromEntries((config.columns ?? []).map((column) => [column.key, column.visible])),
+        ...(persisted.columns?.visibility ?? {}),
+    };
+    ensureVisibleColumn(config, columnVisibility);
     const defaultFilters = Object.fromEntries(
         (config.columns ?? [])
             .filter((column) => column.filter)
@@ -29,10 +34,7 @@ export function createNativeState(config) {
             ...(persisted.filters ?? {}),
         },
         columns: {
-            visibility: {
-                ...Object.fromEntries((config.columns ?? []).map((column) => [column.key, column.visible])),
-                ...(persisted.columns?.visibility ?? {}),
-            },
+            visibility: columnVisibility,
         },
         search: persisted.search ?? '',
         expanded: new Set(),
@@ -77,6 +79,16 @@ export function createNativeState(config) {
             globalThis.window?.clearTimeout?.(saveTimer);
         },
     };
+}
+
+function ensureVisibleColumn(config, visibility) {
+    const columns = config.columns ?? [];
+
+    if (columns.length === 0 || columns.some((column) => visibility[column.key] !== false)) {
+        return;
+    }
+
+    visibility[columns[0].key] = true;
 }
 
 function structuredCloneState(state) {

@@ -194,6 +194,8 @@ describe('Petak native renderer', () => {
         document.querySelector('[data-petak-select-row="1"]').dispatchEvent(new Event('change', { bubbles: true }));
 
         all = document.querySelector('[data-petak-select-all]');
+        expect(document.querySelector('[data-petak-row="1"]').dataset.petakSelected).toBe('true');
+        expect(document.querySelector('[data-petak-row="2"]').dataset.petakSelected).toBeUndefined();
         expect(all.checked).toBe(false);
         expect(all.indeterminate).toBe(true);
         expect(all.dataset.petakSelectionState).toBe('partial');
@@ -202,6 +204,8 @@ describe('Petak native renderer', () => {
         all.dispatchEvent(new Event('change', { bubbles: true }));
 
         all = document.querySelector('[data-petak-select-all]');
+        expect(document.querySelector('[data-petak-row="1"]').dataset.petakSelected).toBe('true');
+        expect(document.querySelector('[data-petak-row="2"]').dataset.petakSelected).toBe('true');
         expect(all.checked).toBe(true);
         expect(all.indeterminate).toBe(false);
         expect(all.dataset.petakSelectionState).toBe('all');
@@ -210,6 +214,8 @@ describe('Petak native renderer', () => {
         all.dispatchEvent(new Event('change', { bubbles: true }));
 
         all = document.querySelector('[data-petak-select-all]');
+        expect(document.querySelector('[data-petak-row="1"]').dataset.petakSelected).toBeUndefined();
+        expect(document.querySelector('[data-petak-row="2"]').dataset.petakSelected).toBeUndefined();
         expect(all.checked).toBe(false);
         expect(all.indeterminate).toBe(false);
         expect(all.dataset.petakSelectionState).toBe('none');
@@ -437,6 +443,7 @@ describe('Petak native renderer', () => {
                     <span class="petak__columns-caret" aria-hidden="true"></span>
                 </button>
                 <div class="petak__columns-menu" hidden data-petak-columns-menu>
+                    <label><input type="checkbox" value="id" data-petak-column checked> ID</label>
                     <label><input type="checkbox" value="name" data-petak-column checked> Name</label>
                 </div>
             </div>
@@ -451,7 +458,7 @@ describe('Petak native renderer', () => {
         menuToggle.click();
         expect(menu.hidden).toBe(false);
 
-        const toggle = document.querySelector('[data-petak-column]');
+        const toggle = document.querySelector('[data-petak-column][value="name"]');
         toggle.checked = false;
         toggle.dispatchEvent(new Event('change'));
 
@@ -459,6 +466,137 @@ describe('Petak native renderer', () => {
 
         expect(document.querySelector('[data-petak-column="name"]')).toBeNull();
         expect(window.localStorage.getItem('petak:columns:v1')).toContain('"name":false');
+    });
+
+    it('keeps at least one column visible from the columns menu', async () => {
+        vi.useFakeTimers();
+        const element = mountGrid({
+            state: {
+                key: 'columns-minimum',
+                store: 'local-storage',
+                version: 1,
+            },
+            columns: [
+                baseColumn({ key: 'id', label: 'ID' }),
+                baseColumn({ key: 'name', label: 'Name' }),
+            ],
+            initialResult: {
+                data: [{ id: 1, name: 'Ada' }],
+            },
+        }, `
+            <div class="petak__columns">
+                <button class="petak__columns-toggle" type="button" aria-expanded="false" data-petak-columns-toggle>
+                    <span>Columns</span>
+                    <span class="petak__columns-caret" aria-hidden="true"></span>
+                </button>
+                <div class="petak__columns-menu" hidden data-petak-columns-menu>
+                    <button type="button" data-petak-columns-select-all>Select all</button>
+                    <label><input type="checkbox" value="id" data-petak-column checked> ID</label>
+                    <label><input type="checkbox" value="name" data-petak-column checked> Name</label>
+                </div>
+            </div>
+        `);
+
+        createPetakGrid(element);
+
+        const id = document.querySelector('[data-petak-column][value="id"]');
+        const name = document.querySelector('[data-petak-column][value="name"]');
+
+        id.checked = false;
+        id.dispatchEvent(new Event('change'));
+        await vi.advanceTimersByTimeAsync(120);
+
+        expect(document.querySelector('tbody td[data-petak-column="id"]')).toBeNull();
+        expect(name.disabled).toBe(true);
+
+        name.checked = false;
+        name.dispatchEvent(new Event('change'));
+        await vi.advanceTimersByTimeAsync(120);
+
+        expect(name.checked).toBe(true);
+        expect(document.querySelector('tbody td[data-petak-column="name"]').textContent).toBe('Ada');
+        expect(window.localStorage.getItem('petak:columns-minimum:v1')).toContain('"name":true');
+    });
+
+    it('selects all columns from the visible columns menu shortcut', async () => {
+        vi.useFakeTimers();
+        const element = mountGrid({
+            state: {
+                key: 'columns-select-all',
+                store: 'local-storage',
+                version: 1,
+            },
+            columns: [
+                baseColumn({ key: 'id', label: 'ID' }),
+                baseColumn({ key: 'name', label: 'Name' }),
+            ],
+            initialResult: {
+                data: [{ id: 1, name: 'Ada' }],
+            },
+        }, `
+            <div class="petak__columns">
+                <button class="petak__columns-toggle" type="button" aria-expanded="false" data-petak-columns-toggle>
+                    <span>Columns</span>
+                    <span class="petak__columns-caret" aria-hidden="true"></span>
+                </button>
+                <div class="petak__columns-menu" hidden data-petak-columns-menu>
+                    <button type="button" data-petak-columns-select-all>Select all</button>
+                    <label><input type="checkbox" value="id" data-petak-column checked> ID</label>
+                    <label><input type="checkbox" value="name" data-petak-column checked> Name</label>
+                </div>
+            </div>
+        `);
+
+        createPetakGrid(element);
+
+        const id = document.querySelector('[data-petak-column][value="id"]');
+        const selectAll = document.querySelector('[data-petak-columns-select-all]');
+
+        id.checked = false;
+        id.dispatchEvent(new Event('change'));
+        await vi.advanceTimersByTimeAsync(120);
+
+        expect(document.querySelector('tbody td[data-petak-column="id"]')).toBeNull();
+        expect(selectAll.disabled).toBe(false);
+
+        selectAll.click();
+        await vi.advanceTimersByTimeAsync(120);
+
+        expect(id.checked).toBe(true);
+        expect(selectAll.disabled).toBe(true);
+        expect(document.querySelector('tbody td[data-petak-column="id"]').textContent).toBe('1');
+        expect(window.localStorage.getItem('petak:columns-select-all:v1')).toContain('"id":true');
+    });
+
+    it('restores one visible column when persisted visibility hides every column', () => {
+        window.localStorage.setItem('petak:columns-persisted:v1', JSON.stringify({
+            columns: {
+                visibility: {
+                    id: false,
+                    name: false,
+                },
+            },
+        }));
+
+        const element = mountGrid({
+            state: {
+                key: 'columns-persisted',
+                store: 'local-storage',
+                version: 1,
+            },
+            columns: [
+                baseColumn({ key: 'id', label: 'ID' }),
+                baseColumn({ key: 'name', label: 'Name' }),
+            ],
+            initialResult: {
+                data: [{ id: 1, name: 'Ada' }],
+            },
+        });
+
+        createPetakGrid(element);
+
+        expect(document.querySelector('tbody td[data-petak-column="id"]').textContent).toBe('1');
+        expect(document.querySelector('tbody td[data-petak-column="name"]')).toBeNull();
     });
 
     it('supports native no-value and range filter operators locally', async () => {
@@ -667,7 +805,7 @@ describe('Petak native renderer', () => {
         expect(document.querySelectorAll('col.petak-native__control-col')).toHaveLength(2);
         expect(document.querySelector('.petak-native__details-cell [data-petak-toggle-details]')).not.toBeNull();
         expect(document.querySelector('.petak-native__selection-cell [data-petak-select-row]')).not.toBeNull();
-        expect(document.querySelector('.petak-native__table').style.getPropertyValue('--petak-native-table-min-width')).toBe('204px');
+        expect(document.querySelector('.petak-native__table').style.getPropertyValue('--petak-native-table-min-width')).toBe('208px');
     });
 
     it('keeps responsive collapse active after the collapsed columns leave the table DOM', () => {

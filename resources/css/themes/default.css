@@ -57,10 +57,23 @@
         box-shadow: 0 .5rem 1.25rem color-mix(in srgb, var(--petak-color) 12%, transparent);
     }
 
-    .petak__columns-heading {
+    .petak__columns-header {
         color: var(--petak-muted-color);
         background: var(--petak-footer-surface);
         border-block-end: var(--petak-border-width) solid var(--petak-row-divider);
+    }
+
+    .petak__columns-select-all {
+        color: var(--petak-accent);
+        background: transparent;
+        border-color: transparent;
+    }
+
+    .petak__columns-select-all:hover:not(:disabled) {
+        color: var(--petak-color);
+        background: var(--petak-surface-hover);
+        border-color: transparent;
+        text-decoration: underline;
     }
 
     .petak__columns-list label:hover {

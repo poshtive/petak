@@ -93,16 +93,28 @@ function columnWidth(root, column, available) {
     return configuredColumnWidth(column, available);
 }
 
-function controlColumnWidth(root) {
-    const measured = root.querySelector('.petak-native__control-cell')?.getBoundingClientRect().width ?? 0;
+function controlColumnWidthForDensity(density) {
+    if (density === 'compact') {
+        return 32;
+    }
 
-    return measured > 0 ? measured : 40;
+    if (density === 'spacious') {
+        return 48;
+    }
+
+    return 40;
 }
 
-function detailsControlColumnWidth(root) {
+function controlColumnWidth(root, config) {
+    const measured = root.querySelector('.petak-native__control-cell')?.getBoundingClientRect().width ?? 0;
+
+    return measured > 0 ? measured : controlColumnWidthForDensity(config.appearance?.density);
+}
+
+function detailsControlColumnWidth(root, config) {
     const measured = root.querySelector('.petak-native__details-cell')?.getBoundingClientRect().width ?? 0;
 
-    return measured > 0 ? measured : 36;
+    return measured > 0 ? measured : controlColumnWidthForDensity(config.appearance?.density);
 }
 
 export function createLayoutState() {
@@ -120,7 +132,7 @@ export function nextCollapsedColumns({ root, config, state, current }) {
     const columns = visibleColumns(config, state);
     const widths = new Map(columns.map((column) => [column.key, columnWidth(root, column, available)]));
     const measuredWidth = tableWidth(root);
-    const selectionWidth = hasBulkActions(config) ? controlColumnWidth(root) : 0;
+    const selectionWidth = hasBulkActions(config) ? controlColumnWidth(root, config) : 0;
     const configuredWidth = columns.reduce((total, column) => total + (widths.get(column.key) ?? 0), selectionWidth);
     let overflow = Math.max(measuredWidth, configuredWidth) - available;
 
@@ -139,7 +151,7 @@ export function nextCollapsedColumns({ root, config, state, current }) {
             config.responsive?.layout === 'collapse'
             && !detailControlAdded
         ) {
-            overflow += detailsControlColumnWidth(root);
+            overflow += detailsControlColumnWidth(root, config);
             detailControlAdded = true;
         }
 

@@ -345,17 +345,62 @@ export function createNativeGrid(element, options = {}) {
             flushFilters();
         });
 
-        element.querySelectorAll('[data-petak-column]').forEach((toggle) => {
-            toggle.checked = stateStore.get().columns.visibility[toggle.value] !== false;
+        const columnToggles = [...element.querySelectorAll('[data-petak-column]')];
+        const columnsSelectAll = element.querySelector('[data-petak-columns-select-all]');
+        const syncColumnToggles = () => {
+            const visibility = stateStore.get().columns.visibility;
+            const checked = columnToggles.filter((toggle) => visibility[toggle.value] !== false);
+            const onlyVisible = checked.length === 1 ? checked[0] : null;
+
+            columnToggles.forEach((toggle) => {
+                toggle.checked = visibility[toggle.value] !== false;
+                toggle.disabled = toggle === onlyVisible;
+            });
+
+            if (columnsSelectAll) {
+                columnsSelectAll.disabled = columnToggles.every((toggle) => toggle.checked);
+            }
+        };
+
+        columnToggles.forEach((toggle) => {
             toggle.addEventListener('change', () => {
                 stateStore.update((state) => {
+                    if (!toggle.checked) {
+                        const visible = columnToggles.filter((candidate) => (
+                            candidate === toggle
+                                ? false
+                                : state.columns.visibility[candidate.value] !== false
+                        ));
+
+                        if (visible.length === 0) {
+                            toggle.checked = true;
+
+                            return state;
+                        }
+                    }
+
                     state.columns.visibility[toggle.value] = toggle.checked;
 
                     return state;
                 });
+                syncColumnToggles();
                 layoutState = createLayoutState();
                 render();
             });
+        });
+        syncColumnToggles();
+
+        columnsSelectAll?.addEventListener('click', () => {
+            stateStore.update((state) => {
+                columnToggles.forEach((toggle) => {
+                    state.columns.visibility[toggle.value] = true;
+                });
+
+                return state;
+            });
+            syncColumnToggles();
+            layoutState = createLayoutState();
+            render();
         });
 
         if (search) {

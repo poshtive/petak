@@ -59,8 +59,21 @@ function columnStyle(column) {
     return styles.join('; ');
 }
 
-function tableMinWidth(columns, detailsControl, selectionControl) {
-    const controlWidth = (detailsControl ? 36 : 0) + (selectionControl ? 40 : 0);
+function controlColumnWidthForDensity(density) {
+    if (density === 'compact') {
+        return 32;
+    }
+
+    if (density === 'spacious') {
+        return 48;
+    }
+
+    return 40;
+}
+
+function tableMinWidth(columns, detailsControl, selectionControl, density) {
+    const controlWidth = controlColumnWidthForDensity(density)
+        * ((detailsControl ? 1 : 0) + (selectionControl ? 1 : 0));
     const columnsWidth = columns.reduce((total, column) => total + configuredColumnWidth(column, 0), 0);
 
     return `${controlWidth + columnsWidth}px`;
@@ -287,10 +300,11 @@ function renderBody(config, state, result, layoutState) {
 
     rows.forEach((row, index) => {
         const key = `${rowKey(row, config, index)}`;
+        const selected = state.selected.has(key);
         const detailsOpen = state.expanded.has(key)
             || (Boolean(config.responsive?.collapse_start_open) && !state.collapsedToggled.has(key));
         const tr = el('tr', {
-            dataset: { petakRow: key },
+            dataset: selected ? { petakRow: key, petakSelected: 'true' } : { petakRow: key },
         });
 
         if (detailsControl) {
@@ -305,7 +319,11 @@ function renderBody(config, state, result, layoutState) {
                     'aria-expanded': detailsOpen ? 'true' : 'false',
                     'aria-label': detailsOpen ? 'Hide row details' : 'Show row details',
                 }, [
-                    el('span', { class: 'petak-native__toggle-icon', 'aria-hidden': 'true' }),
+                    el('span', {
+                        class: 'petak-native__toggle-icon',
+                        'aria-hidden': 'true',
+                        text: detailsOpen ? '-' : '+',
+                    }),
                 ]),
             ]));
         }
@@ -315,7 +333,7 @@ function renderBody(config, state, result, layoutState) {
                 class: 'petak-native__control-cell petak-native__selection-cell',
                 dataset: { petakPin: 'left' },
             }, [
-                rowCheckbox(key, state.selected.has(key)),
+                rowCheckbox(key, selected),
             ]));
         }
 
@@ -446,7 +464,12 @@ export function renderNativeTable({ root, config, state, result, layoutState, pl
             config.appearance?.striped ? 'is-striped' : '',
             config.appearance?.density ? `is-${config.appearance.density}` : '',
         ].filter(Boolean).join(' '),
-        style: `--petak-native-table-min-width: ${tableMinWidth(columns, detailsControl, selectionControl)}`,
+        style: `--petak-native-table-min-width: ${tableMinWidth(
+            columns,
+            detailsControl,
+            selectionControl,
+            config.appearance?.density,
+        )}`,
     });
     const tableScroll = el('div', {
         class: [
